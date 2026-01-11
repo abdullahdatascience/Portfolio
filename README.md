@@ -1,20 +1,43 @@
 <div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+  <img width="1200" height="475" alt="Portfolio Banner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
 </div>
 
-# Run and deploy your AI Studio app
+# Personal Portfolio Website
 
-This contains everything you need to run your app locally.
+A modern, responsive personal portfolio website built to showcase my skills, projects, and experience as a **Data Analyst**.
 
-View your app in AI Studio: https://ai.studio/apps/drive/1oX2vp0va0ERuK_6U9K4yQQ5HWMP-UtB2
+🔗 **Live Demo:**  
+https://my-portfolio-9xwhqgiff-drabdullahumer-7708s-projects.vercel.app
 
-## Run Locally
+---
 
-**Prerequisites:**  Node.js
+## 🚀 Features
 
+- Responsive and modern UI
+- Projects showcase section
+- Skills and technologies overview
+- Contact section
+- Fast performance with Vite
+- Deployed on Vercel
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+---
+
+## 🛠 Tech Stack
+
+- **Frontend:** React + TypeScript
+- **Build Tool:** Vite
+- **Styling:** CSS / Tailwind (if used)
+- **Deployment:** Vercel
+
+---
+
+## 📦 Run Locally
+
+### Prerequisites
+- Node.js (v18 or higher recommended)
+
+### Steps
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/abdullahdatascience/Portfolio.git
