@@ -1,287 +1,353 @@
+"use client";
 import React from "react";
 import { useInView } from "react-intersection-observer";
 import { motion } from "framer-motion";
-import { Brain } from "lucide-react";
+import Image from "next/image";
+import { Brain, MessageSquare, Users, Lightbulb, Clock, RefreshCw, Target, BookOpen, TrendingUp } from "lucide-react";
+import type { Skill } from "@/lib/types";
 
-// --- Brand Logo Components (Natural Colors) ---
+// ─────────────────────────────────────────────────────────────────────────────
+// REAL BRAND SKILL LOGOS
+// ─────────────────────────────────────────────────────────────────────────────
 
-const PythonLogo = () => (
-  <svg viewBox="0 0 128 128" className="w-full h-full">
-    <defs>
-      <linearGradient id="python-blue" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stopColor="#3776AB" />
-        <stop offset="100%" stopColor="#275D8B" />
-      </linearGradient>
-      <linearGradient id="python-yellow" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stopColor="#FFD43B" />
-        <stop offset="100%" stopColor="#FFE873" />
-      </linearGradient>
-    </defs>
-    <path
-      d="M63.04 19.12c-16.16 0-26.19 7.11-26.19 19.34h26.62v3.87H23.28c-13.31 0-21.94 9.03-21.94 21.63 0 12.6 11.61 21.63 24.31 21.63h6.1v-9.43c0-12.6 11.08-24.03 24.31-24.03h27.99V33.12c0-13.5-11.08-24-24.31-24h-10.71z"
-      fill="url(#python-blue)"
-    />
-    <path
-      d="M20.35 96.18h10.71c13.23 0 24.62-5.58 24.62-19.12h-26.62v-3.87h40.19c13.31 0 24.31 9.03 24.31 21.63 0 12.6-11.08 21.63-24.31 21.63h-5.9v9.43c0 12.6-11.08 24.03-24.31 24.03h-28.19v-18.77c0-13.5 11.08-24.37 24.31-24.37z"
-      fill="url(#python-yellow)"
-    />
-    <circle cx="45.7" cy="38.5" r="6" fill="#fff" />
-    <circle cx="80.3" cy="95.6" r="6" fill="#fff" />
+/** Generic fallback — shows first 2 letters of skill name */
+const FallbackIcon = ({ name }: { name: string }) => (
+  <div className="w-full h-full flex items-center justify-center rounded bg-primary/10 text-primary font-bold text-[10px] leading-none">
+    {name.slice(0, 2).toUpperCase()}
+  </div>
+);
+
+interface IconProps { size?: number; className?: string; }
+
+/** Programming — VS Code blue brackets */
+const ProgrammingIcon = ({ size = 24, className = "" }: IconProps) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+    <path d="M14 3L21 12L14 21" stroke="#007ACC" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M10 3L3 12L10 21" stroke="#007ACC" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
 
-const RLogo = () => (
-  <svg viewBox="0 0 128 128" className="w-full h-full">
-    <path
-      fill="#84919c"
-      d="M68.6 32.4h39.5c7.5 0 13.6 6.1 13.6 13.6v34.3c0 7.5-6.1 13.6-13.6 13.6H68.6V32.4z"
-      fillOpacity="0.4"
-    />
-    <path
-      fill="#276DC3"
-      d="M64.6 60.6c8.8 0 15.9-7.1 15.9-15.9s-7.1-15.9-15.9-15.9H25.1c-8.8 0-15.9 7.1-15.9 15.9V98c0 8.8 7.1 15.9 15.9 15.9h18.6V83.7h7.9l12.1 30.2h21.2L71.7 81c4.9-2.6 8.3-7.7 8.3-13.6 0-3.8-2.5-6.8-5.4-6.8H64.6z"
-    />
+/** Data Analysis — Pandas-style stacked cylinder */
+const DataAnalysisIcon = ({ size = 24, className = "" }: IconProps) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+    <ellipse cx="12" cy="5.5" rx="8" ry="3" stroke="#E70488" strokeWidth="1.7" />
+    <path d="M4 5.5v5c0 1.66 3.58 3 8 3s8-1.34 8-3v-5" stroke="#E70488" strokeWidth="1.7" strokeLinecap="round" />
+    <path d="M4 10.5v5c0 1.66 3.58 3 8 3s8-1.34 8-3v-5" stroke="#130754" strokeWidth="1.7" strokeLinecap="round" />
   </svg>
 );
 
-const SqlLogo = () => (
-  <svg viewBox="0 0 64 64" className="w-full h-full" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M32 10C18.745 10 8 13.58 8 18C8 22.42 18.745 26 32 26C45.255 26 56 22.42 56 18C56 13.58 45.255 10 32 10Z" fill="#00BCF2" fillOpacity="0.2" stroke="#00BCF2" strokeWidth="2"/>
-    <path d="M56 26V34C56 38.42 45.255 42 32 42C18.745 42 8 38.42 8 34V26" stroke="#00BCF2" strokeWidth="2" strokeLinecap="round"/>
-    <path d="M56 42V50C56 54.42 45.255 58 32 58C18.745 58 8 54.42 8 50V42" stroke="#00BCF2" strokeWidth="2" strokeLinecap="round"/>
-    <path d="M32 18C45.255 18 56 14.42 56 10" stroke="#00BCF2" strokeWidth="1" strokeOpacity="0.5" strokeDasharray="4 4"/>
+/** Visualization — Tableau-inspired bar chart */
+const VisualizationIcon = ({ size = 24, className = "" }: IconProps) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+    <rect x="2"  y="14" width="4" height="7" rx="1" fill="#E8762D" />
+    <rect x="9"  y="9"  width="4" height="12" rx="1" fill="#1F3A6E" />
+    <rect x="16" y="4"  width="4" height="17" rx="1" fill="#E8762D" opacity=".7" />
+    <path d="M1 21h22" stroke="#1F3A6E" strokeWidth="1.5" strokeLinecap="round" />
   </svg>
 );
 
-const ExcelLogo = () => (
-  <svg viewBox="0 0 64 64" className="w-full h-full">
-    <rect x="4" y="8" width="56" height="48" rx="4" fill="#217346" />
-    <path d="M4 18h56v28H4z" fill="#1E6C41" fillOpacity="0.3" />
-    <path
-      d="M22 22L32 38L42 22H36L32 30L28 22H22Z"
-      fill="white"
-    />
-    <path
-      d="M22 42L32 26L42 42H36L32 34L28 42H22Z"
-      fill="white"
-    />
-    <rect x="12" y="12" width="4" height="4" fill="white" fillOpacity="0.3" />
-    <rect x="48" y="48" width="4" height="4" fill="white" fillOpacity="0.3" />
+/** AI & Machine Learning — TensorFlow/neural-net nodes */
+const AiMlIcon = ({ size = 24, className = "" }: IconProps) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+    <circle cx="12" cy="12" r="2.5" fill="#FF6F00" />
+    <circle cx="4"  cy="7"  r="1.8" fill="#EE4C2C" />
+    <circle cx="20" cy="7"  r="1.8" fill="#EE4C2C" />
+    <circle cx="4"  cy="17" r="1.8" fill="#EE4C2C" />
+    <circle cx="20" cy="17" r="1.8" fill="#EE4C2C" />
+    <path d="M5.6 7.8L12 12M18.4 7.8L12 12M5.6 16.2L12 12M18.4 16.2L12 12"
+          stroke="#FF6F00" strokeWidth="1.3" strokeOpacity=".7" />
   </svg>
 );
 
-const PowerBiLogo = () => (
-  <svg viewBox="0 0 32 32" className="w-full h-full">
-    <rect x="6" y="14" width="6" height="12" rx="1" fill="#E6AD10" />
-    <rect x="13" y="8" width="6" height="18" rx="1" fill="#F6D240" />
-    <rect x="20" y="4" width="6" height="22" rx="1" fill="#F8E588" />
+const ImgIcon = ({ src, alt }: { src: string; alt?: string }) => (
+  <Image
+    src={src}
+    alt={alt || "Tool Icon"}
+    fill
+    className="object-contain"
+  />
+);
+
+/** Microsoft Excel — official green X icon (inline, always shows) */
+const ExcelIcon = () => (
+  <svg viewBox="0 0 24 24" className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+    <rect width="24" height="24" rx="3" fill="#217346"/>
+    <path d="M14 4h6v2h-6V4zm0 4h6v2h-6V8zm0 4h6v2h-6v-2zm0 4h6v2h-6v-2z" fill="#FFFFFF" opacity="0.4"/>
+    <path d="M4 4h8v16H4V4z" fill="#185C37"/>
+    <text x="8" y="16" textAnchor="middle" fontFamily="Arial,sans-serif" fontSize="10" fontWeight="bold" fill="#FFFFFF">X</text>
   </svg>
 );
 
-// --- Natural Category Logos ---
-
-interface IconProps {
-  size?: number;
-  className?: string;
-}
-
-const ProgrammingCategoryLogo = ({ size = 32, className = "" }: IconProps) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className} xmlns="http://www.w3.org/2000/svg">
-    <path d="M10 20L14 4" stroke="#A78BFA" strokeWidth="2.5" strokeLinecap="round" />
-    <path d="M17 8L22 12L17 16" stroke="#60A5FA" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M7 16L2 12L7 8" stroke="#60A5FA" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+/** Microsoft Power BI — official yellow icon (inline, always shows) */
+const PowerBIIcon = () => (
+  <svg viewBox="0 0 24 24" className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+    <rect x="4" y="13" width="4" height="7" rx="1" fill="#F2C811"/>
+    <rect x="10" y="8"  width="4" height="12" rx="1" fill="#F2C811" opacity="0.75"/>
+    <rect x="16" y="3"  width="4" height="17" rx="1" fill="#F2C811" opacity="0.5"/>
   </svg>
 );
 
-const DataAnalysisCategoryLogo = ({ size = 32, className = "" }: IconProps) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className} xmlns="http://www.w3.org/2000/svg">
-    <path d="M20 12V17C20 20.5 16.5 22 12 22C7.5 22 4 20.5 4 17V12" stroke="#2DD4BF" strokeWidth="2" strokeLinecap="round"/>
-    <ellipse cx="12" cy="7" rx="8" ry="3" stroke="#2DD4BF" strokeWidth="2" />
-    <path d="M4 12C4 14.5 7.5 16 12 16" stroke="#2DD4BF" strokeWidth="2" strokeLinecap="round"/>
-    <circle cx="16" cy="16" r="5" fill="#1F2937" stroke="#F472B6" strokeWidth="2"/>
-    <path d="M19.5 19.5L22 22" stroke="#F472B6" strokeWidth="2" strokeLinecap="round"/>
-  </svg>
-);
+const nameIconMap: Record<string, React.ReactNode> = {
+  // Programming
+  "Python":            <div className="relative w-full h-full"><ImgIcon src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/python/python-original.svg" alt="Python" /></div>,
+  "R":                 <div className="relative w-full h-full"><ImgIcon src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/r/r-original.svg" alt="R" /></div>,
+  "SQL":               <div className="relative w-full h-full"><ImgIcon src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/microsoftsqlserver/microsoftsqlserver-original.svg" alt="SQL Server" /></div>,
+  "MySQL":             <div className="relative w-full h-full"><ImgIcon src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/mysql/mysql-original.svg" alt="MySQL" /></div>,
+  "PostgreSQL":        <div className="relative w-full h-full"><ImgIcon src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/postgresql/postgresql-original.svg" alt="PostgreSQL" /></div>,
+  "Git":               <div className="relative w-full h-full"><ImgIcon src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/git/git-original.svg" alt="Git" /></div>,
+  "Jupyter":           <div className="relative w-full h-full"><ImgIcon src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/jupyter/jupyter-original.svg" alt="Jupyter" /></div>,
+  "Jupyter Notebook":  <div className="relative w-full h-full"><ImgIcon src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/jupyter/jupyter-original.svg" alt="Jupyter" /></div>,
 
-const VisualizationCategoryLogo = ({ size = 32, className = "" }: IconProps) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className} xmlns="http://www.w3.org/2000/svg">
-    <rect x="3" y="13" width="4" height="8" rx="1" fill="#F472B6" />
-    <rect x="9" y="8" width="4" height="13" rx="1" fill="#818CF8" />
-    <rect x="15" y="4" width="4" height="17" rx="1" fill="#34D399" />
-  </svg>
-);
+  // Data Analysis
+  "Excel":             <ExcelIcon />,
+  "Microsoft Excel":   <ExcelIcon />,
+  "Pandas":            <div className="relative w-full h-full"><ImgIcon src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/pandas/pandas-original.svg" alt="Pandas" /></div>,
+  "NumPy":             <div className="relative w-full h-full"><ImgIcon src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/numpy/numpy-original.svg" alt="NumPy" /></div>,
+  "SPSS":              <div className="relative w-full h-full"><ImgIcon src="https://www.vectorlogo.zone/logos/ibm/ibm-icon.svg" alt="IBM SPSS" /></div>,
 
-const AiMlCategoryLogo = ({ size = 32, className = "" }: IconProps) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className} xmlns="http://www.w3.org/2000/svg">
-    <circle cx="12" cy="12" r="2.5" fill="#F472B6" />
-    <circle cx="5" cy="7" r="2" fill="#A78BFA" />
-    <circle cx="19" cy="7" r="2" fill="#A78BFA" />
-    <circle cx="5" cy="17" r="2" fill="#A78BFA" />
-    <circle cx="19" cy="17" r="2" fill="#A78BFA" />
-    
-    <path d="M5 7L12 12" stroke="#60A5FA" strokeWidth="1.5" strokeOpacity="0.6" />
-    <path d="M19 7L12 12" stroke="#60A5FA" strokeWidth="1.5" strokeOpacity="0.6" />
-    <path d="M5 17L12 12" stroke="#60A5FA" strokeWidth="1.5" strokeOpacity="0.6" />
-    <path d="M19 17L12 12" stroke="#60A5FA" strokeWidth="1.5" strokeOpacity="0.6" />
-  </svg>
-);
+  // Visualization
+  "Power BI":          <PowerBIIcon />,
+  "PowerBI":           <PowerBIIcon />,
+  "PowerBi":           <PowerBIIcon />,
+  "powerbi":           <PowerBIIcon />,
+  "power bi":          <PowerBIIcon />,
+  "Power Bi":          <PowerBIIcon />,
+  "Microsoft Power BI": <PowerBIIcon />,
+  "Tableau":           <div className="relative w-full h-full"><ImgIcon src="https://www.vectorlogo.zone/logos/tableau/tableau-icon.svg" alt="Tableau" /></div>,
+  "tableau":           <div className="relative w-full h-full"><ImgIcon src="https://www.vectorlogo.zone/logos/tableau/tableau-icon.svg" alt="Tableau" /></div>,
+  "Matplotlib":        <div className="relative w-full h-full"><ImgIcon src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/matplotlib/matplotlib-original.svg" alt="Matplotlib" /></div>,
+  "Looker":            <div className="relative w-full h-full"><ImgIcon src="https://www.vectorlogo.zone/logos/looker/looker-icon.svg" alt="Looker" /></div>,
+  "Looker Studio":     <div className="relative w-full h-full"><ImgIcon src="https://www.vectorlogo.zone/logos/looker/looker-icon.svg" alt="Looker Studio" /></div>,
+  "Power Automate":    <div className="relative w-full h-full"><ImgIcon src="https://www.vectorlogo.zone/logos/microsoft_flow/microsoft_flow-icon.svg" alt="Power Automate" /></div>,
 
-interface SkillProgressProps {
-  name: string;
-  level: number;
-  icon: React.ReactNode;
-}
+  // AI & Machine Learning
+  "Scikit-learn":      <div className="relative w-full h-full"><ImgIcon src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/scikitlearn/scikitlearn-original.svg" alt="Scikit-learn" /></div>,
+  "Scikit Learn":      <div className="relative w-full h-full"><ImgIcon src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/scikitlearn/scikitlearn-original.svg" alt="Scikit-learn" /></div>,
+  "TensorFlow":        <div className="relative w-full h-full"><ImgIcon src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/tensorflow/tensorflow-original.svg" alt="TensorFlow" /></div>,
+  "PyTorch":           <div className="relative w-full h-full"><ImgIcon src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/pytorch/pytorch-original.svg" alt="PyTorch" /></div>,
+  "Keras":             <div className="relative w-full h-full"><ImgIcon src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/keras/keras-original.svg" alt="Keras" /></div>,
+  "OpenCV":            <div className="relative w-full h-full"><ImgIcon src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/opencv/opencv-original.svg" alt="OpenCV" /></div>,
+  "AI / ML":           <AiMlIcon size={20} />,
 
-const SkillProgress: React.FC<SkillProgressProps> = ({ name, level, icon }) => {
+  // DevOps & Cloud
+  "Docker":            <div className="relative w-full h-full"><ImgIcon src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/docker/docker-original.svg" alt="Docker" /></div>,
+  "AWS":               <div className="relative w-full h-full"><ImgIcon src="https://www.vectorlogo.zone/logos/amazon_aws/amazon_aws-icon.svg" alt="AWS" /></div>,
+  "GCP":               <div className="relative w-full h-full"><ImgIcon src="https://www.vectorlogo.zone/logos/google_cloud/google_cloud-icon.svg" alt="Google Cloud" /></div>,
+  "Google Cloud":      <div className="relative w-full h-full"><ImgIcon src="https://www.vectorlogo.zone/logos/google_cloud/google_cloud-icon.svg" alt="Google Cloud" /></div>,
+  "Azure":             <div className="relative w-full h-full"><ImgIcon src="https://www.vectorlogo.zone/logos/microsoft_azure/microsoft_azure-icon.svg" alt="Azure" /></div>,
+  
+  // Data Engineering
+  "Airflow":           <div className="relative w-full h-full"><ImgIcon src="https://www.vectorlogo.zone/logos/apache_airflow/apache_airflow-icon.svg" alt="Apache Airflow" /></div>,
+  "Apache Airflow":    <div className="relative w-full h-full"><ImgIcon src="https://www.vectorlogo.zone/logos/apache_airflow/apache_airflow-icon.svg" alt="Apache Airflow" /></div>,
+  "Spark":             <div className="relative w-full h-full"><ImgIcon src="https://www.vectorlogo.zone/logos/apache_spark/apache_spark-icon.svg" alt="Apache Spark" /></div>,
+  "PySpark":           <div className="relative w-full h-full"><ImgIcon src="https://www.vectorlogo.zone/logos/apache_spark/apache_spark-icon.svg" alt="Apache Spark" /></div>,
+  "Hadoop":            <div className="relative w-full h-full"><ImgIcon src="https://www.vectorlogo.zone/logos/apache_hadoop/apache_hadoop-icon.svg" alt="Apache Hadoop" /></div>,
+  "Kafka":             <div className="relative w-full h-full"><ImgIcon src="https://www.vectorlogo.zone/logos/apache_kafka/apache_kafka-icon.svg" alt="Apache Kafka" /></div>,
+  "Snowflake":         <div className="relative w-full h-full"><ImgIcon src="https://www.vectorlogo.zone/logos/snowflake/snowflake-icon.svg" alt="Snowflake" /></div>,
+  "BigQuery":          <div className="relative w-full h-full"><ImgIcon src="https://www.vectorlogo.zone/logos/google_bigquery/google_bigquery-icon.svg" alt="Google BigQuery" /></div>,
+};
+
+/** Helper to find icon by name (case-insensitive) */
+const getSkillIcon = (name: string) => {
+  const normalized = name.toLowerCase().trim();
+  const entry = Object.entries(nameIconMap).find(([key]) => key.toLowerCase() === normalized);
+  return entry ? entry[1] : <FallbackIcon name={name} />;
+};
+
+const categoryIconMap: Record<string, React.ReactNode> = {
+  "Programming":           <ProgrammingIcon  size={22} />,
+  "Data Analysis":         <DataAnalysisIcon size={22} />,
+  "Visualization":         <VisualizationIcon size={22} />,
+  "AI & Machine Learning": <AiMlIcon         size={22} />,
+};
+
+const CATEGORY_ORDER = ["Programming", "Data Analysis", "Visualization", "AI & Machine Learning"];
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SKILL PROGRESS BAR
+// ─────────────────────────────────────────────────────────────────────────────
+
+interface SkillProgressProps { name: string; icon: React.ReactNode; }
+
+const SkillProgress: React.FC<SkillProgressProps> = ({ name, icon }) => {
   const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.2 });
-
   return (
     <motion.div
       ref={ref}
-      initial={{ opacity: 0, x: -20 }}
-      animate={inView ? { opacity: 1, x: 0 } : {}}
-      transition={{ duration: 0.7 }}
-      className="mb-6"
+      initial={{ opacity: 0, y: 10 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.3 }}
+      className="last:mb-0 mb-4"
     >
-      <div className="flex justify-between items-center mb-1">
-        <span className="text-base font-medium text-white flex items-center gap-2">
-          <span className="w-5 h-5 flex items-center justify-center">{icon}</span> {name}
+      <div className="flex items-center gap-2.5 mb-1.5">
+        <span className="w-4 h-4 flex items-center justify-center flex-shrink-0 relative">
+          {icon}
         </span>
-        <span className="text-sm font-medium text-teal-400">{level}%</span>
+        <span className="text-xs font-semibold text-foreground">{name}</span>
       </div>
-
-      <div className="w-full bg-gray-700 h-3 rounded-full overflow-hidden">
-        <motion.div
-          initial={{ width: 0 }}
-          animate={inView ? { width: `${level}%` } : {}}
-          transition={{ duration: 1.4, ease: "easeOut" }}
-          className="h-3 bg-gradient-to-r from-teal-400 to-teal-600 rounded-full"
-        />
-      </div>
+      <div className="w-full bg-muted/70 h-1 rounded-full overflow-hidden border border-border/60 opacity-70" />
     </motion.div>
   );
 };
 
-const SoftSkillBadge: React.FC<{ skill: string; delay: number }> = ({
-  skill,
-  delay,
-}) => {
-  const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.1 });
+// ─────────────────────────────────────────────────────────────────────────────
+// SOFT SKILLS
+// ─────────────────────────────────────────────────────────────────────────────
 
+interface SoftSkill {
+  label: string;
+  description: string;
+  icon: React.ReactNode;
+  color: string;
+  textColor: string;
+  borderColor: string;
+}
+
+const SOFT_SKILLS: SoftSkill[] = [
+  { label: "Communication",      description: "Translating complex data into clear, compelling narratives for any audience.",           icon: <MessageSquare size={16} />, color: "bg-teal-500/5",    textColor: "text-teal-400",    borderColor: "hover:border-teal-500/30"   },
+  { label: "Teamwork",            description: "Collaborating across cross-functional teams to deliver shared objectives.",              icon: <Users        size={16} />, color: "bg-blue-500/5",    textColor: "text-blue-400",    borderColor: "hover:border-blue-500/30"   },
+  { label: "Problem Solving",     description: "Breaking down ambiguous challenges into structured, data-driven solutions.",             icon: <Lightbulb    size={16} />, color: "bg-yellow-500/5",  textColor: "text-yellow-400",  borderColor: "hover:border-yellow-500/30" },
+  { label: "Time Management",     description: "Prioritising tasks effectively to meet tight deadlines without sacrificing quality.",    icon: <Clock        size={16} />, color: "bg-purple-500/5",  textColor: "text-purple-400",  borderColor: "hover:border-purple-500/30" },
+  { label: "Adaptability",        description: "Thriving in fast-changing environments and quickly learning new tools and methods.",     icon: <RefreshCw    size={16} />, color: "bg-emerald-500/5", textColor: "text-emerald-400", borderColor: "hover:border-emerald-500/30"},
+  { label: "Critical Thinking",   description: "Evaluating data objectively to draw well-reasoned, evidence-based conclusions.",        icon: <Brain        size={16} />, color: "bg-pink-500/5",    textColor: "text-pink-400",    borderColor: "hover:border-pink-500/30"   },
+  { label: "Attention to Detail", description: "Ensuring accuracy and consistency across every dataset, report, and deliverable.",      icon: <Target       size={16} />, color: "bg-rose-500/5",    textColor: "text-rose-400",    borderColor: "hover:border-rose-500/30"   },
+  { label: "Continuous Learning", description: "Staying ahead of the curve by actively exploring new analytical techniques.",           icon: <BookOpen     size={16} />, color: "bg-cyan-500/5",    textColor: "text-cyan-400",    borderColor: "hover:border-cyan-500/30"   },
+  { label: "Results-Oriented",    description: "Focusing on measurable impact and actionable insights that drive real business value.", icon: <TrendingUp   size={16} />, color: "bg-orange-500/5",  textColor: "text-orange-400",  borderColor: "hover:border-orange-500/30" },
+];
+
+const SoftSkillCard: React.FC<{ skill: SoftSkill; index: number }> = ({ skill, index }) => {
+  const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.1 });
   return (
-    <motion.span
+    <motion.div
       ref={ref}
-      initial={{ opacity: 0, scale: 0.7 }}
-      animate={inView ? { opacity: 1, scale: 1 } : {}}
-      transition={{ duration: 0.6, delay }}
-      className="bg-gray-700 text-teal-300 text-sm font-medium px-4 py-2 rounded-full shadow-xl border border-gray-700 transition-all duration-300 hover:shadow-teal-500/20 hover:border-teal-500/50"
+      initial={{ opacity: 0, y: 15 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.4, delay: index * 0.05 }}
+      className={`group flex flex-col gap-3 bg-card/70 rounded-xl p-5 border border-border/60 backdrop-blur-md ${skill.borderColor} hover:bg-muted/70 transition-all duration-300`}
     >
-      {skill}
-    </motion.span>
+      <div className="flex items-center gap-3">
+        <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${skill.color} ${skill.textColor}`}>
+          {skill.icon}
+        </div>
+        <span className="text-sm font-semibold text-foreground">{skill.label}</span>
+      </div>
+      <p className="text-[11px] text-muted-foreground leading-normal">{skill.description}</p>
+    </motion.div>
   );
 };
 
-const technicalSkills = [
-  {
-    category: "Programming",
-    icon: <ProgrammingCategoryLogo size={22} />,
-    skills: [
-      { name: "Python", level: 85, icon: <PythonLogo /> },
-      { name: "R", level: 75, icon: <RLogo /> },
-    ],
-  },
-  {
-    category: "Data Analysis",
-    icon: <DataAnalysisCategoryLogo size={22} />,
-    skills: [
-      { name: "SQL", level: 65, icon: <SqlLogo /> },
-      { name: "Excel", level: 90, icon: <ExcelLogo /> },
-    ],
-  },
-  {
-    category: "Visualization",
-    icon: <VisualizationCategoryLogo size={22} />,
-    skills: [{ name: "Power BI", level: 70, icon: <PowerBiLogo /> }],
-  },
-  {
-    category: "AI & Machine Learning",
-    icon: <AiMlCategoryLogo size={22} />,
-    skills: [{ name: "AI / ML", level: 60, icon: <AiMlCategoryLogo size={20} /> }],
-  },
-];
+// ─────────────────────────────────────────────────────────────────────────────
+// MAIN COMPONENT
+// ─────────────────────────────────────────────────────────────────────────────
 
-const softSkills = [
-  "Problem Solving",
-  "Communication",
-  "Teamwork",
-  "Attention to Detail",
-  "Time Management",
-];
+const Skills: React.FC<{ skills: Skill[] }> = ({ skills }) => {
+  // Group by category, preserve admin dropdown order
+  const grouped = skills.reduce((acc, s) => {
+    (acc[s.category] ??= []).push(s);
+    return acc;
+  }, {} as Record<string, Skill[]>);
 
-const Skills: React.FC = () => {
+  const sortedCategories = [
+    ...CATEGORY_ORDER.filter((c) => grouped[c]),
+    ...Object.keys(grouped).filter((c) => !CATEGORY_ORDER.includes(c)),
+  ];
+
   return (
-    <section id="skills" className="py-16 sm:py-20 bg-gray-900">
-      <div className="container mx-auto px-6">
-        <motion.h2
-          initial={{ opacity: 0, y: -20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.7 }}
-          className="text-3xl sm:text-4xl font-bold text-center text-white mb-12"
-        >
-          Core Competencies
-        </motion.h2>
+    <section id="skills" className="py-24 sm:py-36 bg-background relative overflow-hidden">
+      <div className="container mx-auto px-6 relative z-10">
 
-        {/* Technical Skill Cards */}
-        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10 mb-12">
-          {technicalSkills.map((category, index) => (
-            <motion.div
-              key={category.category}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.8, delay: index * 0.2 }}
-              className="bg-gray-800/50 rounded-lg shadow-xl p-8 backdrop-blur-sm border border-gray-700/50 overflow-hidden transition-all duration-300 ease-in-out hover:shadow-teal-500/20 hover:border-teal-500/50 transform hover:-translate-y-1"
-            >
-              <div className="flex items-center justify-center gap-2 mb-6">
-                <span className="w-6 h-6">{category.icon}</span>
-                <h3 className="text-2xl font-bold text-white">
-                  {category.category}
-                </h3>
-              </div>
-
-              <div>
-                {category.skills.map((skill) => (
-                  <SkillProgress
-                    key={skill.name}
-                    name={skill.name}
-                    level={skill.level}
-                    icon={skill.icon}
-                  />
-                ))}
-              </div>
-            </motion.div>
-          ))}
+        <div className="text-center mb-24">
+          <motion.p
+            initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-primary text-[10px] font-bold tracking-[0.4em] uppercase mb-4"
+          >
+            Technical Proficiency
+          </motion.p>
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }} transition={{ duration: 0.6 }}
+            className="text-4xl md:text-5xl font-bold text-foreground tracking-tight"
+          >
+            Core Competencies
+          </motion.h2>
+          <motion.div
+            initial={{ scaleX: 0 }} whileInView={{ scaleX: 1 }}
+            viewport={{ once: true }} transition={{ duration: 0.8, delay: 0.2 }}
+            className="mx-auto mt-6 h-0.5 w-12 bg-primary/40"
+          />
         </div>
 
-        {/* Soft Skills */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
-          className="bg-gray-800/50 rounded-lg shadow-xl p-8 max-w-4xl mx-auto backdrop-blur-sm border border-gray-700/50 overflow-hidden transition-all duration-300 ease-in-out hover:shadow-teal-500/20 hover:border-teal-500/50 transform hover:-translate-y-1"
-        >
-          <h3 className="text-2xl font-bold text-white mb-6 text-center flex items-center justify-center gap-2">
-            <Brain size={22} className="text-teal-400" /> Soft Skills
-          </h3>
+        {/* Technical skill cards */}
+        {sortedCategories.length > 0 ? (
+          <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 items-start">
+            {sortedCategories.map((category, index) => {
+              const itemCount = grouped[category].length;
+              let spanClass = "col-span-1";
+              
+              if (category === "Programming" || itemCount > 6) {
+                spanClass = "col-span-1 lg:col-span-2";
+              }
 
-          <div className="flex flex-wrap justify-center gap-4">
-            {softSkills.map((skill, index) => (
-              <SoftSkillBadge key={skill} skill={skill} delay={index * 0.1} />
+              return (
+                <motion.div
+                  key={category}
+                  initial={{ opacity: 0, y: 20 }} 
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }} 
+                  transition={{ duration: 0.5, delay: index * 0.05 }}
+                  className={`bg-card/60 rounded-2xl p-7 border border-border/60 hover:border-border/80 transition-all duration-500 ${spanClass} flex flex-col h-full group`}
+                >
+                  <div className="flex items-center gap-4 mb-10 pb-4 border-b border-border/60">
+                    <div className="w-9 h-9 rounded-xl bg-muted/80 text-primary flex-shrink-0 flex items-center justify-center border border-border/60 transition-all duration-300 group-hover:scale-105">
+                      {categoryIconMap[category] ?? <AiMlIcon size={20} />}
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-bold text-foreground tracking-tight leading-none">{category}</h3>
+                      <p className="text-[9px] text-muted-foreground font-semibold uppercase tracking-wider mt-1.5">Skills</p>
+                    </div>
+                    <span className="ml-auto text-xs font-bold text-muted-foreground tabular-nums">
+                      {grouped[category].length.toString().padStart(2, '0')}
+                    </span>
+                  </div>
+
+                  <div className={spanClass.includes("col-span-2") ? "grid grid-cols-1 sm:grid-cols-2 gap-x-12" : "flex flex-col"}>
+                    {grouped[category].map((skill) => (
+                      <SkillProgress
+                        key={skill.id}
+                        name={skill.name}
+                        icon={getSkillIcon(skill.name)}
+                      />
+                    ))}
+                  </div>
+                </motion.div>
+              )})}
+          </div>
+        ) : (
+          <div className="max-w-xl mx-auto text-center py-20 bg-card/60 border border-border/60 rounded-3xl">
+            <Brain size={40} className="text-muted-foreground mx-auto mb-4 opacity-50" />
+            <p className="text-muted-foreground text-sm italic tracking-widest px-6">
+              No technical skills have been added to the database yet. 
+              <br/>
+              <span className="text-[10px] uppercase mt-2 block opacity-60">Populate the &apos;skills&apos; collection in the admin portal.</span>
+            </p>
+          </div>
+        )}
+
+        {/* Soft Skills */}
+        <div className="max-w-6xl mx-auto mt-32">
+          <div className="flex items-center gap-6 mb-16">
+            <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.5em] whitespace-nowrap">Intrapersonal Skills</h3>
+            <div className="h-px w-full bg-border/60" />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {SOFT_SKILLS.map((skill, index) => (
+              <SoftSkillCard key={skill.label} skill={skill} index={index} />
             ))}
           </div>
-        </motion.div>
+        </div>
+
       </div>
     </section>
   );

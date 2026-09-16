@@ -1,141 +1,182 @@
-import React, { useEffect, useState, useRef } from "react";
+"use client"
 
-/**
- * Improvements made:
- * 1. Layout Stability: Added min-width/height constraints to the badge container to prevent layout shifts when the iframe loads.
- * 2. Loading State: Added a skeleton pulse animation while the external script is loading the badge.
- * 3. Robust Script Loading: Checks if the script already exists to avoid duplicate tags. Triggers a refresh if the global Credly object exists.
- * 4. Sizing: Significantly increased max-width (max-w-5xl) and padding (p-10) to improve length and width presence.
- */
+import React, { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import { ExternalLink, Award } from "lucide-react";
+import type { Certification } from "@/lib/types";
 
-const Certifications: React.FC = () => {
-  const [isLoading, setIsLoading] = useState(true);
-  const badgeContainerRef = useRef<HTMLDivElement>(null);
+// ─── Credly embed script loader (singleton) ─────────────────
+let credlyLoaded = false;
+
+const loadCredlyScript = (): Promise<void> =>
+  new Promise((resolve) => {
+    if (typeof window === "undefined") return resolve();
+    if (credlyLoaded) {
+      if (window.Credly?.embed) window.Credly.embed();
+      return resolve();
+    }
+    const src = "https://cdn.credly.com/assets/utilities/embed.js";
+    if (document.querySelector(`script[src="${src}"]`)) {
+      credlyLoaded = true;
+      return resolve();
+    }
+    const s = document.createElement("script");
+    s.src = src;
+    s.async = true;
+    s.onload = () => { credlyLoaded = true; resolve(); };
+    s.onerror = () => resolve(); 
+    document.body.appendChild(s);
+  });
+
+const CertCard: React.FC<{ cert: Certification; index: number }> = ({ cert, index }) => {
+  const [badgeReady, setBadgeReady] = useState(false);
+  const hasCredly = Boolean(cert.badgeId);
 
   useEffect(() => {
-    const scriptSrc = "https://cdn.credly.com/assets/utilities/embed.js";
+    if (!hasCredly) return;
+    loadCredlyScript().then(() => setBadgeReady(true));
+  }, [hasCredly]);
+
+  useEffect(() => {
+    if (badgeReady && window.Credly?.embed) {
+      window.Credly.embed();
+    }
+  }, [badgeReady]);
+
+  const renderMedia = () => {
+    if (hasCredly) {
+      return (
+        <div className="relative min-w-[150px] min-h-[200px] flex items-center justify-center">
+          {!badgeReady && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 animate-pulse">
+              <div className="w-28 h-28 bg-white/5 rounded-full" />
+              <div className="w-20 h-2.5 bg-white/5 rounded" />
+              <div className="w-16 h-2.5 bg-white/5 rounded" />
+            </div>
+          )}
+          <div
+            data-iframe-width="150"
+            data-iframe-height="200"
+            data-share-badge-id={cert.badgeId}
+            data-share-badge-host="https://www.credly.com"
+            className={badgeReady ? "visible" : "invisible"}
+          />
+        </div>
+      );
+    }
     
-    // Function to check if script is loaded and initialize embed
-    const loadScript = () => {
-      // Check if script already exists in DOM
-      const existingScript = document.querySelector(`script[src="${scriptSrc}"]`);
+    return (
+      <div className="w-28 h-28 rounded-2xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center">
+        <Award size={48} className="text-teal-400" />
+      </div>
+    );
+  };
 
-      if (!existingScript) {
-        const script = document.createElement("script");
-        script.src = scriptSrc;
-        script.async = true;
-        script.onload = () => {
-          setIsLoading(false);
-        };
-        script.onerror = () => {
-          console.error("Failed to load Credly embed script");
-          setIsLoading(false); // Stop loading spinner even on error
-        };
-        document.body.appendChild(script);
-      } else {
-        // If script exists, we might need to re-trigger the embed parser
-        setIsLoading(false);
-        if (window.Credly && typeof window.Credly.embed === 'function') {
-           window.Credly.embed();
-        }
-      }
-    };
+  const getButtonInfo = () => {
+    if (hasCredly) {
+      return {
+        label: "Verify on Credly",
+        url: `https://www.credly.com/badges/${cert.badgeId}`,
+        icon: <ExternalLink size={14} />
+      };
+    }
+    if (cert.certificateUrl && /^https?:\/\//i.test(cert.certificateUrl)) {
+      return {
+        label: "View Certificate",
+        url: cert.certificateUrl,
+        icon: <ExternalLink size={14} />
+      };
+    }
+    return null;
+  };
 
-    loadScript();
-  }, []);
+  const buttonInfo = getButtonInfo();
 
   return (
-    <section id="certifications" className="py-16 sm:py-24 bg-gray-900">
-      <div className="container mx-auto px-6">
-        <h2 className="text-3xl sm:text-5xl font-bold text-center text-white mb-16">
-          Certifications
-        </h2>
+    <motion.div
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.6, delay: index * 0.1 }}
+      className="bg-card/70 rounded-3xl shadow-2xl p-6 sm:p-8 backdrop-blur-xl border border-border/60
+                 hover:shadow-teal-500/10 hover:border-teal-500/30 transition-all duration-500 hover:-translate-y-2 group"
+    >
+      <div className="flex flex-col md:flex-row items-center gap-8 md:gap-12">
+        <div className="flex-shrink-0 flex justify-center">
+          {renderMedia()}
+        </div>
 
-        {/* Increased max-width to 5xl and padding to p-10 for better width and length */}
-        <div className="bg-gray-800/50 rounded-2xl shadow-2xl p-10 backdrop-blur-sm border border-gray-700/50 overflow-hidden transition-all duration-300 ease-in-out hover:shadow-teal-500/20 hover:border-teal-500/50 transform hover:-translate-y-1 max-w-5xl mx-auto">
-          <div className="flex flex-col md:flex-row items-center gap-12">
-            
-            {/* Certification Badge Area */}
-            <div className="flex-shrink-0 flex justify-center relative">
-              {/* 
-                Container with min dimensions matches the data-iframe attributes 
-                to prevent layout shift and provide space for the loader.
-              */}
-              <div 
-                ref={badgeContainerRef}
-                className="relative min-w-[150px] min-h-[270px] flex items-center justify-center"
-              >
-                 {/* Skeleton Loading State */}
-                {isLoading && (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center space-y-4 animate-pulse">
-                    <div className="w-32 h-32 bg-gray-700 rounded-full"></div>
-                    <div className="w-24 h-4 bg-gray-700 rounded"></div>
-                    <div className="w-20 h-4 bg-gray-700 rounded"></div>
-                  </div>
-                )}
+        <div className="flex-1 text-center md:text-left">
+          <span className="inline-block mb-2 text-xs font-bold text-teal-400 uppercase tracking-[0.2em]">
+            {cert.issuer}
+          </span>
+          <h3 className="text-2xl font-bold text-foreground mb-3">
+            {cert.title}
+          </h3>
+          {cert.issueDate && (
+            <p className="text-sm text-muted-foreground mb-4 flex items-center justify-center md:justify-start gap-2">
+               <Award size={14} /> {cert.issueDate}
+            </p>
+          )}
+          
+          <div className="h-px w-full bg-gradient-to-r from-teal-500/30 via-white/10 to-transparent mb-6" />
 
-                {/* The actual embed div */}
-                <div
-                  data-iframe-width="150"
-                  data-iframe-height="270"
-                  data-share-badge-id="fb520fa3-6605-48e6-8034-e14a2198cac6"
-                  data-share-badge-host="https://www.credly.com"
-                  className={isLoading ? 'invisible' : 'visible'}
-                ></div>
-              </div>
+          {buttonInfo && (
+            <a
+              href={buttonInfo.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-teal-500 text-slate-950 font-bold rounded-xl hover:bg-teal-400 transition-all duration-300 text-sm shadow-lg hover:shadow-teal-500/40"
+            >
+              {buttonInfo.label}
+              {buttonInfo.icon}
+            </a>
+          )}
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+const Certifications: React.FC<{ certs: Certification[] }> = ({ certs }) => {
+  return (
+    <section id="certifications" className="py-20 bg-background relative overflow-hidden">
+      <div className="absolute top-1/2 left-0 -translate-y-1/2 w-[500px] h-[500px] bg-indigo-500/5 rounded-full blur-[120px] -z-10 pointer-events-none" />
+      
+      <div className="container mx-auto px-4 sm:px-6 md:pl-24 relative z-10">
+        <motion.div
+           initial={{ opacity: 0, y: -20 }}
+           whileInView={{ opacity: 1, y: 0 }}
+           viewport={{ once: true }}
+           className="text-center mb-12"
+        >
+          <h2 className="text-3xl sm:text-5xl font-bold mb-4">
+             <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-blue-400">
+               Certifications
+             </span>
+          </h2>
+          <div className="mx-auto h-1 w-24 rounded-full bg-gradient-to-r from-teal-400 to-blue-500" />
+        </motion.div>
+
+        <div className="max-w-5xl mx-auto space-y-8">
+          {certs.map((cert, index) => (
+            <CertCard key={cert.id} cert={cert} index={index} />
+          ))}
+          {certs.length === 0 && (
+            <div className="text-center py-16 opacity-40">
+              <p>No certifications recorded yet.</p>
             </div>
-
-            {/* Certification Details */}
-            <div className="flex-1 text-center md:text-left flex flex-col justify-center">
-              <h3 className="text-3xl font-bold text-white mb-4">
-                IT-Specialist
-              </h3>
-
-              <div className="flex flex-wrap justify-center md:justify-start gap-3 mb-6">
-                <span className="bg-gray-700 text-teal-400 text-sm font-semibold px-4 py-1.5 rounded-full border border-gray-600">
-                  Certiport
-                </span>
-              </div>
-
-              <div className="flex justify-center md:justify-start">
-                <a
-                  href="https://www.credly.com/users/muhammad-abdullah.42c52f56"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="View Muhammad Abdullah's Credly Profile"
-                  className="inline-flex items-center gap-3 px-6 py-3 bg-teal-500 text-gray-900 font-bold rounded-xl hover:bg-teal-400 transition-all duration-300 text-base shadow-lg hover:shadow-teal-500/50"
-                >
-                  View Credly Profile
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                    />
-                  </svg>
-                </a>
-              </div>
-            </div>
-          </div>
+          )}
         </div>
       </div>
     </section>
   );
 };
 
-// Add global type definition for Credly to avoid TS errors
+export default Certifications;
+
 declare global {
   interface Window {
-    Credly?: {
-      embed: () => void;
-    };
+    Credly?: { embed: () => void };
   }
 }
-
-export default Certifications;

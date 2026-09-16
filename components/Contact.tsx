@@ -1,83 +1,236 @@
-import React from 'react';
+"use client"
+
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { Mail, Send, Github, Linkedin, CheckCircle2, AlertCircle } from "lucide-react";
 
 const contactInfo = {
-  email: 'drabdullahumer@gmail.com',
-  linkedin: 'https://www.linkedin.com/in/abdullahumer12',
-  github: 'https://github.com/abdullahdatascience',
+  email: "drabdullahumer@gmail.com",
+  linkedin: "https://www.linkedin.com/in/abdullahumer12",
+  github: "https://github.com/abdullahdatascience",
 };
 
-const Contact: React.FC = () => {
-  return (
-    <section id="contact" className="py-16 sm:py-24 bg-gray-900">
-      <div className="container mx-auto px-6">
-        <h2 className="text-3xl sm:text-5xl font-bold text-center text-white mb-16">
-          Get In Touch
-        </h2>
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-        {/* Container with increased width and padding */}
-        <div className="bg-gray-800/50 rounded-2xl shadow-2xl p-10 backdrop-blur-sm border border-gray-700/50 overflow-hidden transition-all duration-300 ease-in-out hover:shadow-teal-500/20 hover:border-teal-500/50 transform hover:-translate-y-1 max-w-5xl mx-auto">
-          
-          <div className="flex flex-col md:flex-row items-center justify-between gap-10">
-            
-            {/* Left Side: Text Content */}
-            <div className="flex-1 text-center md:text-left">
-              <h3 className="text-2xl font-semibold text-white mb-4">
-                Let's Connect
+const Contact: React.FC = () => {
+  const [form, setForm] = useState({ name: "", email: "", message: "" });
+  const [honeypot, setHoneypot] = useState("");
+  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (honeypot) {
+      setStatus("sent");
+      setTimeout(() => setStatus("idle"), 3000);
+      return;
+    }
+    if (!form.name.trim() || !form.email.trim() || !form.message.trim()) return;
+    if (!EMAIL_RE.test(form.email.trim())) {
+      setStatus("error");
+      setTimeout(() => setStatus("idle"), 4000);
+      return;
+    }
+
+    setStatus("sending");
+    try {
+      await addDoc(collection(db, "messages"), {
+        name: form.name.trim(),
+        email: form.email.trim(),
+        message: form.message.trim(),
+        createdAt: serverTimestamp(),
+      });
+      setForm({ name: "", email: "", message: "" });
+      setStatus("sent");
+      setTimeout(() => setStatus("idle"), 5000);
+    } catch {
+      setStatus("error");
+      setTimeout(() => setStatus("idle"), 4000);
+    }
+  };
+
+  return (
+    <section id="contact" className="py-20 bg-background relative overflow-hidden">
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-indigo-500/5 rounded-full blur-[120px] -z-10 pointer-events-none" />
+
+      <div className="container mx-auto px-4 sm:px-6 md:pl-24">
+        <div className="text-center mb-16">
+          <h2 className="text-3xl sm:text-5xl font-bold mb-4">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent1 to-accent2">
+              Get In Touch
+            </span>
+          </h2>
+          <div className="mx-auto h-1 w-24 rounded-full bg-gradient-to-r from-primary to-accent1" />
+        </div>
+
+        <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12">
+          <div className="flex flex-col justify-between space-y-8">
+            <div>
+              <p className="text-sm font-bold text-primary uppercase tracking-[0.3em] mb-4">Collaborate</p>
+              <h3 className="text-3xl sm:text-4xl font-bold text-foreground mb-6">
+                Let&apos;s work together on your next project.
               </h3>
-              <p className="text-gray-300 text-lg leading-relaxed max-w-2xl">
-                I'm always open to discussing new projects, creative ideas, or opportunities to be part of an amazing team.
+              <p className="text-muted-foreground text-lg leading-relaxed max-w-md">
+                I&apos;m open to new opportunities and collaborations. Reach out with questions or to say hello.
               </p>
             </div>
 
-            {/* Right Side: Actions with Natural Icons */}
-            <div className="w-full md:w-auto">
-              <ul className="flex flex-col sm:flex-row gap-4 w-full justify-center md:justify-end">
-                {/* Gmail Button - Natural Style: White Background (Envelope) with Red Icon */}
-                <li>
-                  <a
-                    href={`mailto:${contactInfo.email}`}
-                    className="group inline-flex justify-center items-center w-full sm:w-auto px-8 py-4 bg-white text-gray-900 font-bold rounded-xl hover:bg-gray-100 transition-all duration-300 text-base shadow-lg hover:shadow-white/20 hover:-translate-y-0.5 gap-3"
-                  >
-                    <svg className="w-6 h-6 text-[#EA4335] fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 0 1 0 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.455 4.64 12 9.548l6.545-4.91 1.528-1.145C21.69 2.28 24 3.434 24 5.457z" />
-                    </svg>
-                    <span>Gmail</span>
-                  </a>
-                </li>
+            <div className="space-y-4">
+              <a
+                href={`mailto:${contactInfo.email}`}
+                className="flex items-center gap-4 p-4 rounded-2xl bg-card/70 border border-border/60 hover:bg-muted/70 hover:border-primary/30 transition-colors group"
+              >
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+                  <Mail size={24} />
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Email</p>
+                  <p className="text-foreground font-medium">{contactInfo.email}</p>
+                </div>
+              </a>
 
-                {/* LinkedIn Button - Official Brand Color (#0A66C2) */}
-                <li>
-                  <a
-                    href={contactInfo.linkedin}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="group inline-flex justify-center items-center w-full sm:w-auto px-8 py-4 bg-[#0A66C2] text-white font-bold rounded-xl hover:bg-[#004182] transition-all duration-300 text-base shadow-lg hover:shadow-blue-500/50 hover:-translate-y-0.5 gap-3"
-                  >
-                    <svg className="w-6 h-6 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
-                    </svg>
-                    <span>LinkedIn</span>
-                  </a>
-                </li>
-
-                {/* GitHub Button - Official Brand Color (Dark) */}
-                <li>
-                  <a
-                    href={contactInfo.github}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="group inline-flex justify-center items-center w-full sm:w-auto px-8 py-4 bg-[#24292e] text-white font-bold rounded-xl hover:bg-[#1b1f23] border border-gray-700 transition-all duration-300 text-base shadow-lg hover:shadow-gray-500/50 hover:-translate-y-0.5 gap-3"
-                  >
-                    <svg className="w-6 h-6 fill-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.419-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>
-                    </svg>
-                    <span>GitHub</span>
-                  </a>
-                </li>
-              </ul>
+              <div className="grid grid-cols-2 gap-4">
+                <a
+                  href={contactInfo.linkedin}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-4 p-4 rounded-2xl bg-card/70 border border-border/60 hover:border-blue-500/30 transition-colors"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-400">
+                    <Linkedin size={20} />
+                  </div>
+                  <span className="text-sm font-medium text-foreground">LinkedIn</span>
+                </a>
+                <a
+                  href={contactInfo.github}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-4 p-4 rounded-2xl bg-card/70 border border-border/60 hover:border-muted-foreground/30 transition-colors"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-muted/80 flex items-center justify-center text-foreground">
+                    <Github size={20} />
+                  </div>
+                  <span className="text-sm font-medium text-foreground">GitHub</span>
+                </a>
+              </div>
             </div>
           </div>
+
+          <div className="bg-card/70 border border-border/60 rounded-3xl p-8 backdrop-blur-xl">
+            <AnimatePresence mode="wait">
+              {status === "sent" ? (
+                <motion.div
+                  key="sent"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="flex flex-col items-center justify-center text-center space-y-6 py-12"
+                >
+                  <div className="w-20 h-20 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-500">
+                    <CheckCircle2 size={48} />
+                  </div>
+                  <h3 className="text-2xl font-bold text-foreground">Message sent</h3>
+                  <p className="text-muted-foreground max-w-xs">
+                    Thank you for reaching out. I&apos;ll get back to you soon.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setStatus("idle")}
+                    className="text-primary font-bold text-sm tracking-widest uppercase hover:underline"
+                  >
+                    Send another message
+                  </button>
+                </motion.div>
+              ) : (
+                <motion.form key="form" onSubmit={handleSubmit} className="space-y-6">
+                  {/* Honeypot — hidden from users, bots often fill it */}
+                  <div className="absolute -left-[9999px] opacity-0" aria-hidden="true">
+                    <label htmlFor="website">Website</label>
+                    <input
+                      id="website"
+                      type="text"
+                      name="website"
+                      tabIndex={-1}
+                      autoComplete="off"
+                      value={honeypot}
+                      onChange={(e) => setHoneypot(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <label htmlFor="contact-name" className="text-xs font-bold text-muted-foreground uppercase tracking-widest ml-1">
+                        Full Name
+                      </label>
+                      <input
+                        id="contact-name"
+                        type="text"
+                        required
+                        placeholder="John Doe"
+                        value={form.name}
+                        onChange={(e) => setForm({ ...form, name: e.target.value })}
+                        className="w-full bg-card/70 border border-border/70 rounded-xl px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all placeholder:text-muted-foreground"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label htmlFor="contact-email" className="text-xs font-bold text-muted-foreground uppercase tracking-widest ml-1">
+                        Email
+                      </label>
+                      <input
+                        id="contact-email"
+                        type="email"
+                        required
+                        placeholder="john@example.com"
+                        value={form.email}
+                        onChange={(e) => setForm({ ...form, email: e.target.value })}
+                        className="w-full bg-card/70 border border-border/70 rounded-xl px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all placeholder:text-muted-foreground"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <label htmlFor="contact-message" className="text-xs font-bold text-muted-foreground uppercase tracking-widest ml-1">
+                      Message
+                    </label>
+                    <textarea
+                      id="contact-message"
+                      required
+                      rows={6}
+                      placeholder="Tell me about your project..."
+                      value={form.message}
+                      onChange={(e) => setForm({ ...form, message: e.target.value })}
+                      className="w-full bg-card/70 border border-border/70 rounded-xl px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all placeholder:text-muted-foreground resize-none"
+                    />
+                  </div>
+
+                  {status === "error" && (
+                    <div className="flex items-center gap-2 text-red-400 text-sm bg-red-400/10 p-3 rounded-lg border border-red-400/20">
+                      <AlertCircle size={16} />
+                      <span>Could not send. Check your email and try again.</span>
+                    </div>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={status === "sending"}
+                    className="w-full py-4 bg-primary text-slate-950 font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors disabled:opacity-50"
+                  >
+                    {status === "sending" ? "Sending..." : (
+                      <>
+                        <span>Send message</span>
+                        <Send size={18} />
+                      </>
+                    )}
+                  </button>
+                </motion.form>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
+
+        <p className="text-center text-muted-foreground text-xs mt-16 pb-10">
+          © {new Date().getFullYear()} Muhammad Abdullah · Built with Next.js & Firebase
+        </p>
       </div>
     </section>
   );
