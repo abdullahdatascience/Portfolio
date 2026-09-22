@@ -4,6 +4,7 @@ import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, serverTimestamp
 import { db } from "../firebase";
 import { Education as EducationType } from "./types";
 import { Field, inputCls, SaveBtn, CancelBtn, EditBtn, DeleteBtn, LoadingDots, EmptyState } from "./Common";
+import { revalidatePortfolioWithNotify } from "../utils/revalidatePortfolio";
 
 interface EducationProps {
   notify: (text: string, type: "success" | "error") => void;
@@ -24,7 +25,8 @@ const Education: React.FC<EducationProps> = ({ notify, setConfirmDialog }) => {
     try {
       const s = await getDocs(collection(db, "education"));
       setEducation(s.docs.map(d => ({ id: d.id, ...d.data() } as EducationType)));
-    } catch {
+    } catch (err) {
+      console.error("Failed to fetch education:", err);
       notify("Failed to fetch education", "error");
     } finally {
       setLoading(false);
@@ -42,8 +44,11 @@ const Education: React.FC<EducationProps> = ({ notify, setConfirmDialog }) => {
       await addDoc(collection(db, "education"), { ...newEdu, createdAt: serverTimestamp() });
       setNewEdu({ degree: "", institution: "", graduationDate: "", cgpa: "" });
       fetchEducation();
-      notify("Education added successfully", "success");
-    } catch { notify("Failed to add education", "error"); }
+      revalidatePortfolioWithNotify(notify, "Education added successfully");
+    } catch (err) {
+      console.error("Failed to add education:", err);
+      notify("Failed to add education", "error");
+    }
   };
 
   const startEdit = (edu: EducationType) => {
@@ -74,8 +79,11 @@ const Education: React.FC<EducationProps> = ({ notify, setConfirmDialog }) => {
       });
       cancelEdit();
       fetchEducation();
-      notify("Education updated successfully", "success");
-    } catch { notify("Failed to update education", "error"); }
+      revalidatePortfolioWithNotify(notify, "Education updated successfully");
+    } catch (err) {
+      console.error("Failed to update education:", err);
+      notify("Failed to update education", "error");
+    }
   };
 
   const deleteEdu = async (id: string) => {
@@ -85,8 +93,11 @@ const Education: React.FC<EducationProps> = ({ notify, setConfirmDialog }) => {
         try {
           await deleteDoc(doc(db, "education", id));
           fetchEducation();
-          notify("Education deleted", "success");
-        } catch { notify("Failed to delete education", "error"); }
+          revalidatePortfolioWithNotify(notify, "Education deleted");
+        } catch (err) {
+          console.error("Failed to delete education:", err);
+          notify("Failed to delete education", "error");
+        }
         setConfirmDialog(null);
       },
     });

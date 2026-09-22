@@ -15,9 +15,10 @@ import Certifications from "@/components/Certifications";
 import { fetchProfile, fetchSkills, fetchProjects, fetchCertifications, fetchEducation, fetchExperience } from "@/lib/fetchData";
 import { LazySideNav, LazyMobileBottomNav, LazyScrollToTop, LazyContact } from "@/components/ClientLoaders";
 
-// ISR: revalidate cached page data once per hour so content updates from the
-// admin portal are reflected on the live site without a full redeploy.
-export const revalidate = 60;
+// The homepage is prerendered at build time and cached. Content changes from
+// the admin portal invalidate it on-demand via POST /api/revalidate, so the
+// next request to "/" is rendered with fresh Firestore data. No time-based
+// revalidation is needed (removed the former `revalidate = 60` workaround).
 
 export default async function Home() {
   // Single parallel fetch — replaces 4 individual component-level fetches

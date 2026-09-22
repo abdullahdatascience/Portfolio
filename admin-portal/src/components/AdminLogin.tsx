@@ -51,7 +51,8 @@ const AdminLogin: React.FC<AdminLoginProps> = ({ setIsLoggedIn }) => {
     if (!email || !password) return setError("Please fill in all fields.");
     setLoading(true);
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      await userCredential.user.getIdToken(true);
       setIsLoggedIn(true);
     } catch (err: any) {
       const code = err.code;

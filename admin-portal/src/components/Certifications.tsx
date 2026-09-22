@@ -5,6 +5,7 @@ import { db } from "../firebase";
 import { Certification } from "./types";
 import { Field, inputCls, SaveBtn, CancelBtn, EditBtn, DeleteBtn, LoadingDots, EmptyState } from "./Common";
 import { isSafeUrl } from "../utils/normalize";
+import { revalidatePortfolioWithNotify } from "../utils/revalidatePortfolio";
 
 interface CertificationsProps {
   notify: (text: string, type: "success" | "error") => void;
@@ -26,6 +27,7 @@ const Certifications: React.FC<CertificationsProps> = ({ notify, setConfirmDialo
       const s = await getDocs(collection(db, "certifications"));
       setCerts(s.docs.map(d => ({ id: d.id, ...d.data() } as Certification)));
     } catch (err) {
+      console.error("Failed to fetch certifications:", err);
       notify("Failed to fetch certifications", "error");
     } finally {
       setLoading(false);
@@ -47,8 +49,11 @@ const Certifications: React.FC<CertificationsProps> = ({ notify, setConfirmDialo
       await addDoc(collection(db, "certifications"), { ...newCert, createdAt: serverTimestamp() });
       setNewCert({ title: "", issuer: "", badgeId: "", certificateUrl: "", issueDate: "" });
       fetchCerts();
-      notify("Certification added successfully", "success");
-    } catch { notify("Failed to add certification", "error"); }
+      revalidatePortfolioWithNotify(notify, "Certification added successfully");
+    } catch (err) {
+      console.error("Failed to add certification:", err);
+      notify("Failed to add certification", "error");
+    }
   };
 
   const startEditCert = (cert: Certification) => {
@@ -85,8 +90,11 @@ const Certifications: React.FC<CertificationsProps> = ({ notify, setConfirmDialo
       });
       cancelEdit();
       fetchCerts();
-      notify("Certification updated successfully", "success");
-    } catch { notify("Failed to update certification", "error"); }
+      revalidatePortfolioWithNotify(notify, "Certification updated successfully");
+    } catch (err) {
+      console.error("Failed to update certification:", err);
+      notify("Failed to update certification", "error");
+    }
   };
 
   const deleteCert = async (id: string) => {
@@ -96,8 +104,11 @@ const Certifications: React.FC<CertificationsProps> = ({ notify, setConfirmDialo
         try {
           await deleteDoc(doc(db, "certifications", id));
           fetchCerts();
-          notify("Certification deleted", "success");
-        } catch { notify("Failed to delete certification", "error"); }
+          revalidatePortfolioWithNotify(notify, "Certification deleted");
+        } catch (err) {
+          console.error("Failed to delete certification:", err);
+          notify("Failed to delete certification", "error");
+        }
         setConfirmDialog(null);
       },
     });

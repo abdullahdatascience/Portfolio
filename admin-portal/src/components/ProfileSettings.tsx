@@ -4,6 +4,7 @@ import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "../firebase";
 import { ProfileData } from "./types";
 import { Field, inputCls, LoadingDots } from "./Common";
+import { revalidatePortfolioWithNotify } from "../utils/revalidatePortfolio";
 
 interface ProfileSettingsProps {
   notify: (text: string, type: "success" | "error") => void;
@@ -63,8 +64,11 @@ const ProfileSettings: React.FC<ProfileSettingsProps> = ({ notify }) => {
         },
         { merge: true }
       );
-      notify("Profile updated successfully", "success");
-    } catch { notify("Failed to update profile", "error"); }
+      revalidatePortfolioWithNotify(notify, "Profile updated successfully");
+    } catch (err) {
+      console.error("Failed to update profile:", err);
+      notify("Failed to update profile", "error");
+    }
   };
 
   if (loading) return <LoadingDots />;

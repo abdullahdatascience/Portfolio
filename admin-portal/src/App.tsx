@@ -12,8 +12,13 @@ const App: React.FC = () => {
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setIsLoggedIn(!!user);
+      // Refresh token FIRST to get latest claims (including email_verified)
+      if (user?.email === ADMIN_EMAIL) {
+        await user.getIdToken(true);
+      }
+      // Then check admin status with refreshed token
       setIsAdmin(!!user && user.email === ADMIN_EMAIL && user.emailVerified);
       setAuthChecked(true);
     });

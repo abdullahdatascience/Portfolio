@@ -49,7 +49,10 @@ const Messages: React.FC<MessagesProps> = ({ notify, setConfirmDialog }) => {
           if (selectedMsgId === id) setSelectedMsgId(null);
           fetchMessages();
           notify("Message deleted", "success");
-        } catch { notify("Failed to delete message", "error"); }
+        } catch (err) {
+          console.error("Failed to delete message:", err);
+          notify("Failed to delete message", "error");
+        }
         setConfirmDialog(null);
       },
     });

@@ -5,6 +5,7 @@ import { db } from "../firebase";
 import { Project } from "./types";
 import { Field, inputCls, selectCls, SaveBtn, CancelBtn, EditBtn, DeleteBtn, LoadingDots, EmptyState } from "./Common";
 import { normalizeToolName, normalizeProjectTitle, normalizeProjectSummary, isSafeUrl } from "../utils/normalize";
+import { revalidatePortfolioWithNotify } from "../utils/revalidatePortfolio";
 
 interface ProjectsProps {
   notify: (text: string, type: "success" | "error") => void;
@@ -30,6 +31,7 @@ const Projects: React.FC<ProjectsProps> = ({ notify, setConfirmDialog }) => {
       const s = await getDocs(collection(db, "projects"));
       setProjects(s.docs.map(d => ({ id: d.id, ...d.data() } as Project)));
     } catch (err) {
+      console.error("Failed to fetch projects:", err);
       notify("Failed to fetch projects", "error");
     } finally {
       setLoading(false);
@@ -84,8 +86,11 @@ const Projects: React.FC<ProjectsProps> = ({ notify, setConfirmDialog }) => {
       setNewProject({ title: "", description: "", summary: "", tools: [], themeColor: "emerald", image: "", link: "", featured: false });
       setToolInput("");
       fetchProjects();
-      notify("Project added successfully", "success");
-    } catch { notify("Failed to add project", "error"); }
+      revalidatePortfolioWithNotify(notify, "Project added successfully");
+    } catch (err) {
+      console.error("Failed to add project:", err);
+      notify("Failed to add project", "error");
+    }
   };
 
   const startEditProject = (project: Project) => {
@@ -127,8 +132,11 @@ const Projects: React.FC<ProjectsProps> = ({ notify, setConfirmDialog }) => {
       });
       cancelEdit();
       fetchProjects();
-      notify("Project updated successfully", "success");
-    } catch { notify("Failed to update project", "error"); }
+      revalidatePortfolioWithNotify(notify, "Project updated successfully");
+    } catch (err) {
+      console.error("Failed to update project:", err);
+      notify("Failed to update project", "error");
+    }
   };
 
   const deleteProject = async (id: string) => {
@@ -138,8 +146,11 @@ const Projects: React.FC<ProjectsProps> = ({ notify, setConfirmDialog }) => {
         try {
           await deleteDoc(doc(db, "projects", id));
           fetchProjects();
-          notify("Project deleted", "success");
-        } catch { notify("Failed to delete project", "error"); }
+          revalidatePortfolioWithNotify(notify, "Project deleted");
+        } catch (err) {
+          console.error("Failed to delete project:", err);
+          notify("Failed to delete project", "error");
+        }
         setConfirmDialog(null);
       },
     });

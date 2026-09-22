@@ -4,6 +4,7 @@ import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, serverTimestamp
 import { db } from "../firebase";
 import { Experience as ExperienceType } from "./types";
 import { Field, inputCls, SaveBtn, CancelBtn, EditBtn, DeleteBtn, LoadingDots, EmptyState } from "./Common";
+import { revalidatePortfolioWithNotify } from "../utils/revalidatePortfolio";
 
 interface ExperienceProps {
   notify: (text: string, type: "success" | "error") => void;
@@ -24,7 +25,8 @@ const Experience: React.FC<ExperienceProps> = ({ notify, setConfirmDialog }) => 
     try {
       const s = await getDocs(collection(db, "experience"));
       setExperience(s.docs.map(d => ({ id: d.id, ...d.data() } as ExperienceType)));
-    } catch {
+    } catch (err) {
+      console.error("Failed to fetch experience:", err);
       notify("Failed to fetch experience", "error");
     } finally {
       setLoading(false);
@@ -42,8 +44,11 @@ const Experience: React.FC<ExperienceProps> = ({ notify, setConfirmDialog }) => 
       await addDoc(collection(db, "experience"), { ...newExp, createdAt: serverTimestamp() });
       setNewExp({ title: "", company: "", startDate: "", endDate: "", responsibilities: "" });
       fetchExperience();
-      notify("Experience added successfully", "success");
-    } catch { notify("Failed to add experience", "error"); }
+      revalidatePortfolioWithNotify(notify, "Experience added successfully");
+    } catch (err) {
+      console.error("Failed to add experience:", err);
+      notify("Failed to add experience", "error");
+    }
   };
 
   const startEdit = (exp: ExperienceType) => {
@@ -76,8 +81,11 @@ const Experience: React.FC<ExperienceProps> = ({ notify, setConfirmDialog }) => 
       });
       cancelEdit();
       fetchExperience();
-      notify("Experience updated successfully", "success");
-    } catch { notify("Failed to update experience", "error"); }
+      revalidatePortfolioWithNotify(notify, "Experience updated successfully");
+    } catch (err) {
+      console.error("Failed to update experience:", err);
+      notify("Failed to update experience", "error");
+    }
   };
 
   const deleteExp = async (id: string) => {
@@ -87,8 +95,11 @@ const Experience: React.FC<ExperienceProps> = ({ notify, setConfirmDialog }) => 
         try {
           await deleteDoc(doc(db, "experience", id));
           fetchExperience();
-          notify("Experience deleted", "success");
-        } catch { notify("Failed to delete experience", "error"); }
+          revalidatePortfolioWithNotify(notify, "Experience deleted");
+        } catch (err) {
+          console.error("Failed to delete experience:", err);
+          notify("Failed to delete experience", "error");
+        }
         setConfirmDialog(null);
       },
     });
