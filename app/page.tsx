@@ -17,7 +17,7 @@ import { LazySideNav, LazyMobileBottomNav, LazyScrollToTop, LazyContact } from "
 
 // ISR: revalidate cached page data once per hour so content updates from the
 // admin portal are reflected on the live site without a full redeploy.
-export const revalidate = 3600;
+export const revalidate = 60;
 
 export default async function Home() {
   // Single parallel fetch — replaces 4 individual component-level fetches
