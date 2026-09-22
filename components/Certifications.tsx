@@ -110,7 +110,7 @@ const CertCard: React.FC<{ cert: Certification; index: number }> = ({ cert, inde
           <span className="inline-block mb-2 text-xs font-bold text-teal-400 uppercase tracking-[0.2em]">
             {cert.issuer}
           </span>
-          <h3 className="text-2xl font-bold text-foreground mb-3">
+          <h3 className="text-2xl font-sans font-bold tracking-tight text-foreground mb-3">
             {cert.title}
           </h3>
           {cert.issueDate && (

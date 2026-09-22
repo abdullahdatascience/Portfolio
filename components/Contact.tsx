@@ -4,13 +4,41 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { Mail, Send, Github, Linkedin, CheckCircle2, AlertCircle } from "lucide-react";
+import { Send, CheckCircle2, AlertCircle } from "lucide-react";
+import { SiGithub } from "react-icons/si";
+import { FaLinkedin } from "react-icons/fa6";
 
 const contactInfo = {
   email: "drabdullahumer@gmail.com",
   linkedin: "https://www.linkedin.com/in/abdullahumer12",
   github: "https://github.com/abdullahdatascience",
 };
+
+const GmailLogo = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    className="w-6 h-6"
+    aria-hidden="true"
+  >
+    <path
+      d="M4 6L12 13L20 6"
+      stroke="#EA4335"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+    <rect
+      x="3"
+      y="5"
+      width="18"
+      height="14"
+      rx="2"
+      stroke="#EA4335"
+      strokeWidth="2"
+    />
+  </svg>
+);
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -56,7 +84,7 @@ const Contact: React.FC = () => {
 
       <div className="container mx-auto px-4 sm:px-6 md:pl-24">
         <div className="text-center mb-16">
-          <h2 className="text-3xl sm:text-5xl font-bold mb-4">
+          <h2 className="text-3xl sm:text-5xl font-sans font-bold tracking-tight mb-4">
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent1 to-accent2">
               Get In Touch
             </span>
@@ -68,7 +96,7 @@ const Contact: React.FC = () => {
           <div className="flex flex-col justify-between space-y-8">
             <div>
               <p className="text-sm font-bold text-primary uppercase tracking-[0.3em] mb-4">Collaborate</p>
-              <h3 className="text-3xl sm:text-4xl font-bold text-foreground mb-6">
+              <h3 className="text-3xl sm:text-4xl font-sans font-bold tracking-tight text-foreground mb-6">
                 Let&apos;s work together on your next project.
               </h3>
               <p className="text-muted-foreground text-lg leading-relaxed max-w-md">
@@ -79,10 +107,11 @@ const Contact: React.FC = () => {
             <div className="space-y-4">
               <a
                 href={`mailto:${contactInfo.email}`}
+                aria-label={`Email ${contactInfo.email}`}
                 className="flex items-center gap-4 p-4 rounded-2xl bg-card/70 border border-border/60 hover:bg-muted/70 hover:border-primary/30 transition-colors group"
               >
                 <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-                  <Mail size={24} />
+                  <GmailLogo />
                 </div>
                 <div>
                   <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Email</p>
@@ -95,10 +124,11 @@ const Contact: React.FC = () => {
                   href={contactInfo.linkedin}
                   target="_blank"
                   rel="noopener noreferrer"
+                  aria-label="Visit my LinkedIn profile"
                   className="flex items-center gap-4 p-4 rounded-2xl bg-card/70 border border-border/60 hover:border-blue-500/30 transition-colors"
                 >
-                  <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-400">
-                    <Linkedin size={20} />
+                  <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-[#0A66C2]">
+                    <FaLinkedin size={22} aria-hidden="true" />
                   </div>
                   <span className="text-sm font-medium text-foreground">LinkedIn</span>
                 </a>
@@ -106,10 +136,11 @@ const Contact: React.FC = () => {
                   href={contactInfo.github}
                   target="_blank"
                   rel="noopener noreferrer"
+                  aria-label="Visit my GitHub profile"
                   className="flex items-center gap-4 p-4 rounded-2xl bg-card/70 border border-border/60 hover:border-muted-foreground/30 transition-colors"
                 >
                   <div className="w-10 h-10 rounded-xl bg-muted/80 flex items-center justify-center text-foreground">
-                    <Github size={20} />
+                    <SiGithub size={22} aria-hidden="true" />
                   </div>
                   <span className="text-sm font-medium text-foreground">GitHub</span>
                 </a>

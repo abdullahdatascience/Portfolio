@@ -11,21 +11,66 @@ import type { ProfileData, Skill, Project, Certification, Education, Experience 
 
 const DEFAULT_PROFILE: ProfileData = {
   name: "Muhammad Abdullah",
-  tagline: "Data Science & AI Enthusiast",
-  subtitle: "A BS Computer Science graduate building practical data and machine learning projects.",
-  aboutTitle: "Turning Data Into Decisions",
+  tagline: "Software Engineer | Data & Machine Learning",
+  subtitle: "A Computer Science graduate who builds practical software systems and applies data and machine learning where it matters.",
+  aboutTitle: "Software Engineering + Data & ML",
   aboutBio: [
-    "New graduate from Government College University Faisalabad focused on Data Science, Machine Learning, and AI.",
-    "Working hands-on with Python, R, SQL, Excel, and Power BI — cleaning and analyzing data, running statistical tests, and building predictive models.",
+    "BS Computer Science graduate from Government College University Faisalabad. I build full-stack applications with React, TypeScript, and FastAPI, and work with data end to end — SQL, analysis, visualization, and applied machine learning.",
+    "My strengths sit at the intersection of software engineering and data: turning requirements into working systems, and turning raw data into reliable models and reports.",
   ].join("\n\n"),
-  projectsCount: 1,
-  toolsCount: 5,
-  experienceCount: 2,
+  typewriterLines: [
+    "A Computer Science graduate who builds practical software systems and applies data and machine learning where it matters.",
+  ],
 };
 
 // Verified credential/content defaults, shown only while the corresponding
 // Firestore collections are empty or unreachable. Admin-published documents
 // always take precedence once present.
+const DEFAULT_PROJECTS: Project[] = [
+  {
+    id: "default-biz-ledger",
+    title: "Biz Ledger",
+    featured: true,
+    themeColor: "teal",
+    tools: ["React", "TypeScript", "Vite", "Tailwind CSS", "FastAPI", "SQLAlchemy", "PostgreSQL", "JWT", "RBAC"],
+    summary:
+      "Full-stack financial ERP with double-entry accounting, banking reconciliation workflows, role-based access, and reporting.",
+    description:
+      "A complete financial ERP system built as a REST API with FastAPI and a React/TypeScript client. Implements double-entry accounting, general ledger, receivable/payable management, and banking reconciliation workflows. Authentication uses JWT with role-based access control, and the API is backed by PostgreSQL via SQLAlchemy. Covers financial reporting and permissioned multi-role usage.",
+    link: "",
+  },
+  {
+    id: "default-churn-prediction",
+    title: "Customer Churn Prediction",
+    themeColor: "violet",
+    tools: ["Python", "Pandas", "NumPy", "Scikit-learn", "Random Forest", "Streamlit"],
+    summary:
+      "An ML application that predicts customer churn with preprocessing pipelines, model evaluation, and an interactive Streamlit UI.",
+    description:
+      "End-to-end machine learning application: data cleaning, EDA, feature engineering, and a scikit-learn preprocessing pipeline feeding a Random Forest classifier. Model performance is assessed with rigorous evaluation metrics. Delivered as a Streamlit app so non-technical users can score customers interactively.",
+  },
+  {
+    id: "default-fraud-detection",
+    title: "Fraud Detection",
+    themeColor: "rose",
+    tools: ["Python", "Scikit-learn", "Random Forest", "SHAP"],
+    summary:
+      "Imbalanced-classification pipeline for transaction fraud, with threshold tuning, F1 evaluation, and SHAP explanations.",
+    description:
+      "Machine learning project handling imbalanced classification on transaction data. Uses Random Forest with class-weighting, probability threshold tuning, and F1-based evaluation to balance precision and recall. SHAP analysis explains individual predictions for auditability.",
+  },
+  {
+    id: "default-salary-api",
+    title: "Salary Prediction API",
+    themeColor: "blue",
+    tools: ["Python", "Scikit-learn", "FastAPI", "Docker", "REST API"],
+    summary:
+      "A practical ML-plus-backend service: a trained salary model served behind a FastAPI REST API, containerized with Docker.",
+    description:
+      "Trains a salary-prediction model with scikit-learn and serves it through a documented FastAPI REST API. The service handles request validation, returns predictions and confidence context, and ships as a Docker image for reproducible deployment. Demonstrates the full path from trained model to consumable API.",
+  },
+];
+
 const DEFAULT_EDUCATION: Education[] = [
   {
     id: "default-gcuf-bs-cs",
@@ -52,14 +97,13 @@ const DEFAULT_EXPERIENCE: Experience[] = [
   {
     id: "default-analytics-internship",
     title: "Data Analytics / Data Science Intern",
-    company: "Data Analytics / Data Science Internship",
+    company: "Internship Program",
     startDate: "November 2025",
     endDate: "March 2026",
     responsibilities: [
-      "Performed data analytics using Python and R",
-      "Conducted statistical testing in R",
-      "Performed data modeling and evaluation",
-      "Used Google Colab for data science work",
+      "Analyzed and prepared data using Python and R for analytical workflows",
+      "Applied statistical testing in R to evaluate patterns and relationships in data",
+      "Worked with data modeling and evaluation workflows using Google Colab",
     ].join("\n"),
   },
 ];
@@ -71,16 +115,17 @@ export async function fetchProfile(): Promise<ProfileData> {
     const snap = await getDoc(doc(db, "settings", "profile"));
     if (!snap.exists()) return DEFAULT_PROFILE;
     const data = snap.data();
-    const lines = data.typewriter as string[] | undefined;
+    const rawLines = data.typewriter;
+    const typewriterLines = (Array.isArray(rawLines) ? rawLines : [])
+      .map((line) => String(line).trim())
+      .filter((line) => line.length > 0);
     return {
       name:            data.heroTitle       || DEFAULT_PROFILE.name,
       tagline:         data.heroTagline     || DEFAULT_PROFILE.tagline,
-      subtitle:        lines?.[0]           || DEFAULT_PROFILE.subtitle,
+      subtitle:        typewriterLines[0]   || DEFAULT_PROFILE.subtitle,
       aboutTitle:      data.aboutTitle      || DEFAULT_PROFILE.aboutTitle,
       aboutBio:        data.aboutBio        || DEFAULT_PROFILE.aboutBio,
-      projectsCount:   data.projectsCount   ?? DEFAULT_PROFILE.projectsCount,
-      toolsCount:      data.toolsCount      ?? DEFAULT_PROFILE.toolsCount,
-      experienceCount: data.experienceCount ?? DEFAULT_PROFILE.experienceCount,
+      typewriterLines: typewriterLines.length > 0 ? typewriterLines : DEFAULT_PROFILE.typewriterLines,
     };
   } catch {
     return DEFAULT_PROFILE;
@@ -107,6 +152,7 @@ export async function fetchSkills(): Promise<Skill[]> {
 export async function fetchProjects(): Promise<Project[]> {
   try {
     const snap = await getDocs(collection(db, "projects"));
+    if (snap.empty) return DEFAULT_PROJECTS;
     return snap.docs.map((d) => {
       const tools = (d.data().tools || []).map((t: string) =>
         t === "Matplotlip" ? "Matplotlib" : t === "Numpy" ? "NumPy" : t
@@ -120,6 +166,7 @@ export async function fetchProjects(): Promise<Project[]> {
         themeColor:  d.data().themeColor  || "emerald",
         image:       d.data().image       || undefined,
         link:        d.data().link,
+        featured:    d.data().featured    || undefined,
       };
       // Verified content corrections for existing CMS records; these become
       // no-ops once the same fixes are saved via the admin portal.

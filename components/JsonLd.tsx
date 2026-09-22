@@ -3,7 +3,7 @@ export default function JsonLd() {
     "@context": "https://schema.org",
     "@type": "Person",
     name: "Muhammad Abdullah",
-    jobTitle: "Data Science & AI Enthusiast",
+    jobTitle: "Software Engineer",
     url: "https://abdullah-portfolio.vercel.app",
     image: "https://abdullah-portfolio.vercel.app/profile.jpeg",
     email: "drabdullahumer@gmail.com",

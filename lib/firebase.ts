@@ -1,7 +1,6 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
-import { getAnalytics, isSupported } from "firebase/analytics";
 
 const firebaseConfig = {
   apiKey:            process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -20,11 +19,11 @@ const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 export const db   = getFirestore(app);
 export const auth = getAuth(app);
 
-// Analytics — client-side only, check for support before initialising
-export const analytics =
-  typeof window !== "undefined"
-    ? isSupported().then((yes) => (yes ? getAnalytics(app) : null))
-    : null;
-
 // NOTE: GoogleAuthProvider and Storage are intentionally omitted — they are
 // not used by the frontend portfolio. Add them back when those features ship.
+//
+// NOTE: Firebase Analytics is intentionally removed. Its initialization was
+// the sole trigger of Firebase Installations requests; it failed because the
+// CSP connect-src did not include firebaseinstallations.googleapis.com, and
+// no part of the application ever consumed the analytics instance. Firestore
+// and Auth do not use Firebase Installations.

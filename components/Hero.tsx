@@ -1,6 +1,6 @@
 "use client"
 
-import React from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { FileText } from "lucide-react";
 import type { ProfileData } from "@/lib/types";
@@ -9,10 +9,96 @@ interface HeroProps {
   heroData: ProfileData;
 }
 
+// ── Hero subtitle typewriter ───────────────────────────────────────────────
+// Rotates continuously through every configured Typewriter Line
+// (admin → Profile → Typewriter Lines). If only one line is configured, it
+// stays visible statically (no animation loop). Empty lines are ignored.
+
+const TYPE_SPEED_MS = 45;       // per-character typing delay
+const DELETE_SPEED_MS = 28;     // deleting is slightly faster than typing
+const HOLD_DURATION_MS = 1800;  // pause after a line is fully typed (1.5–2s)
+const NEXT_LINE_DELAY_MS = 500; // short pause before typing the next line
+
+const useTypewriter = (lines: string[]): string => {
+  const [text, setText] = useState(() => lines.map((l) => l.trim()).find((l) => l.length > 0) ?? "");
+
+  useEffect(() => {
+    const activeLines = lines.map((l) => l.trim()).filter((l) => l.length > 0);
+    if (activeLines.length === 0) return;
+    if (activeLines.length === 1) return;
+
+    let cancelled = false;
+    let timeout: ReturnType<typeof setTimeout> | null = null;
+    let lineIndex = 0;
+    let charCount = 0;
+
+    const schedule = (fn: () => void, delay: number) => {
+      timeout = setTimeout(() => {
+        if (cancelled) return;
+        fn();
+      }, delay);
+    };
+
+    const typeTick = () => {
+      const line = activeLines[lineIndex];
+      if (charCount < line.length) {
+        charCount += 1;
+        setText(line.slice(0, charCount));
+        schedule(typeTick, TYPE_SPEED_MS);
+      } else {
+        schedule(deleteTick, HOLD_DURATION_MS);
+      }
+    };
+
+    const deleteTick = () => {
+      const line = activeLines[lineIndex];
+      if (charCount > 0) {
+        charCount -= 1;
+        setText(line.slice(0, charCount));
+        schedule(deleteTick, DELETE_SPEED_MS);
+      } else {
+        schedule(advanceToNextLine, NEXT_LINE_DELAY_MS);
+      }
+    };
+
+    const startDeleting = () => {
+      // Line 1 is already rendered (matching the server-rendered homepage), so
+      // show it fully, hold it, then delete and cycle through the rest.
+      const line = activeLines[lineIndex];
+      charCount = line.length;
+      setText(line);
+      deleteTick();
+    };
+
+    const advanceToNextLine = () => {
+      lineIndex = (lineIndex + 1) % activeLines.length;
+      typeTick();
+    };
+
+    schedule(startDeleting, HOLD_DURATION_MS);
+
+    return () => {
+      cancelled = true;
+      if (timeout !== null) clearTimeout(timeout);
+    };
+  }, [lines]);
+
+  return text;
+};
+
 const Hero: React.FC<HeroProps> = ({ heroData }) => {
   const nameParts = heroData.name.split(" ");
   const firstName = nameParts[0] || "Muhammad";
   const lastName = nameParts.slice(1).join(" ") || "Abdullah";
+
+  const typewriterLines = useMemo(
+    () =>
+      heroData.typewriterLines && heroData.typewriterLines.length > 0
+        ? heroData.typewriterLines
+        : [heroData.subtitle],
+    [heroData.typewriterLines, heroData.subtitle]
+  );
+  const typewriterText = useTypewriter(typewriterLines);
 
   return (
     <section
@@ -26,20 +112,20 @@ const Hero: React.FC<HeroProps> = ({ heroData }) => {
         <div className="flex-1 flex flex-col items-center lg:items-start max-w-2xl">
           <div className="flex items-center gap-3 mb-6 sm:mb-8">
             <span className="h-px w-6 sm:w-8 bg-teal-400 rounded-full" />
-            <p className="text-teal-400 text-[9px] sm:text-[10px] font-bold tracking-[0.35em] sm:tracking-[0.45em] uppercase">
+            <p className="text-muted-foreground text-[10px] sm:text-[11px] font-bold tracking-[0.35em] sm:tracking-[0.45em] uppercase">
               {heroData.tagline}
             </p>
           </div>
 
           <h1 className="mb-6 sm:mb-8">
             <span
-              className="block text-foreground font-light tracking-tight"
+              className="block text-foreground font-sans font-light tracking-tight"
               style={{ fontSize: "clamp(2.5rem, 10vw, 7rem)", lineHeight: 0.95 }}
             >
               {firstName}
             </span>
             <span
-              className="block text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-violet-400 to-blue-400 font-black -mt-1 sm:-mt-2 md:-mt-4"
+              className="block text-transparent bg-clip-text bg-gradient-to-r from-teal-400 via-violet-400 to-blue-400 font-sans font-black -mt-1 sm:-mt-2 md:-mt-4"
               style={{ fontSize: "clamp(2.5rem, 10vw, 7rem)", lineHeight: 0.95 }}
             >
               {lastName}
@@ -47,7 +133,7 @@ const Hero: React.FC<HeroProps> = ({ heroData }) => {
           </h1>
 
           <p className="text-base sm:text-lg md:text-xl text-muted-foreground font-light max-w-lg mb-8 sm:mb-10">
-            {heroData.subtitle}
+            {typewriterText}
           </p>
 
           <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4">
@@ -76,7 +162,7 @@ const Hero: React.FC<HeroProps> = ({ heroData }) => {
         </div>
 
         <div className="relative flex-shrink-0 hidden sm:block">
-          <div className="relative w-48 h-48 sm:w-56 sm:h-56 lg:w-64 lg:h-64 rounded-2xl overflow-hidden border border-border/70 shadow-2xl">
+          <div className="relative w-48 h-48 sm:w-56 sm:h-56 lg:w-64 lg:h-64 rounded-2xl overflow-hidden bg-card/70 border border-border/60 shadow-2xl">
             <Image
               src="/profile.jpeg"
               alt="Muhammad Abdullah"
@@ -94,7 +180,7 @@ const Hero: React.FC<HeroProps> = ({ heroData }) => {
         </div>
 
         <div className="sm:hidden relative mt-4">
-          <div className="relative w-36 h-36 rounded-xl overflow-hidden border border-border/70 shadow-xl mx-auto">
+          <div className="relative w-36 h-36 rounded-xl overflow-hidden bg-card/70 border border-border/60 shadow-xl mx-auto">
             <Image
               src="/profile.jpeg"
               alt="Muhammad Abdullah"

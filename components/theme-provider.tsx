@@ -23,15 +23,16 @@ function applyTheme(theme: Theme) {
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = React.useState<Theme>("dark")
-
-  React.useEffect(() => {
+  const [theme, setThemeState] = React.useState<Theme>(() => {
+    if (typeof window === "undefined") return "dark"
     const storedTheme = window.localStorage.getItem("portfolio-theme") as Theme | null
     const preferredTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
-    const initialTheme = storedTheme ?? preferredTheme
-    applyTheme(initialTheme)
-    setThemeState(initialTheme)
-  }, [])
+    return storedTheme ?? preferredTheme
+  })
+
+  React.useEffect(() => {
+    applyTheme(theme)
+  }, [theme])
 
   const setTheme = React.useCallback((nextTheme: Theme) => {
     applyTheme(nextTheme)

@@ -17,7 +17,7 @@ const Education: React.FC<{ education: EducationType[] }> = ({ education }) => {
           viewport={{ once: true }}
           className="text-center mb-12"
         >
-          <h2 className="text-3xl sm:text-5xl font-bold mb-4">
+          <h2 className="text-3xl sm:text-5xl font-sans font-bold tracking-tight mb-4">
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-blue-400">
               Education
             </span>

@@ -17,7 +17,7 @@ const Experience: React.FC<{ experience: ExperienceType[] }> = ({ experience }) 
           viewport={{ once: true }}
           className="text-center mb-12"
         >
-          <h2 className="text-3xl sm:text-5xl font-bold mb-4">
+          <h2 className="text-3xl sm:text-5xl font-sans font-bold tracking-tight mb-4">
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-blue-400">
               Experience
             </span>
@@ -50,7 +50,7 @@ const Experience: React.FC<{ experience: ExperienceType[] }> = ({ experience }) 
                         </div>
                         <div>
                           <h3 className="text-lg sm:text-xl font-bold text-foreground">{exp.title}</h3>
-                          <p className="text-sm text-teal-400 font-medium">{exp.company}</p>
+                          <p className="text-sm text-muted-foreground font-medium">{exp.company}</p>
                         </div>
                       </div>
 

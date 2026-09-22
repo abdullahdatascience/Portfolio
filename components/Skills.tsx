@@ -2,52 +2,40 @@
 import React from "react";
 import { useInView } from "react-intersection-observer";
 import { motion } from "framer-motion";
-import Image from "next/image";
 import { Brain, MessageSquare, Users, Lightbulb, Clock, RefreshCw, Target, BookOpen, TrendingUp } from "lucide-react";
 import type { Skill } from "@/lib/types";
-
-// ─────────────────────────────────────────────────────────────────────────────
-// REAL BRAND SKILL LOGOS
-// ─────────────────────────────────────────────────────────────────────────────
+import { getSkillIcon, SkillLogo } from "@/lib/skillIcons";
 
 /** Generic fallback — shows first 2 letters of skill name */
 const FallbackIcon = ({ name }: { name: string }) => (
-  <div className="w-full h-full flex items-center justify-center rounded bg-primary/10 text-primary font-bold text-[10px] leading-none">
-    {name.slice(0, 2).toUpperCase()}
-  </div>
+  <span className="w-4 h-4 flex items-center justify-center flex-shrink-0 relative">
+    <span className="w-full h-full flex items-center justify-center rounded bg-primary/10 text-primary font-bold text-[10px] leading-none">
+      {name.slice(0, 2).toUpperCase()}
+    </span>
+  </span>
 );
 
 interface IconProps { size?: number; className?: string; }
 
-/** Programming — VS Code blue brackets */
-const ProgrammingIcon = ({ size = 24, className = "" }: IconProps) => (
+/** Category icon — Software Engineering (code brackets) */
+const SoftwareIcon = ({ size = 24, className = "" }: IconProps) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
-    <path d="M14 3L21 12L14 21" stroke="#007ACC" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-    <path d="M10 3L3 12L10 21" stroke="#007ACC" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M8 6L3 12L8 18" stroke="#007ACC" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M16 6L21 12L16 18" stroke="#007ACC" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M13.5 4L10.5 20" stroke="#8B5CF6" strokeWidth="2.2" strokeLinecap="round" />
   </svg>
 );
 
-/** Data Analysis — Pandas-style stacked cylinder */
-const DataAnalysisIcon = ({ size = 24, className = "" }: IconProps) => (
+/** Category icon — Data & Analytics (bar chart) */
+const DataAnalyticsIcon = ({ size = 24, className = "" }: IconProps) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
-    <ellipse cx="12" cy="5.5" rx="8" ry="3" stroke="#E70488" strokeWidth="1.7" />
-    <path d="M4 5.5v5c0 1.66 3.58 3 8 3s8-1.34 8-3v-5" stroke="#E70488" strokeWidth="1.7" strokeLinecap="round" />
-    <path d="M4 10.5v5c0 1.66 3.58 3 8 3s8-1.34 8-3v-5" stroke="#130754" strokeWidth="1.7" strokeLinecap="round" />
+    <path d="M4 20V10M10 20V4M16 20V13M22 20H2" stroke="#E8762D" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    <circle cx="16" cy="10" r="2.5" fill="#1F3A6E" />
   </svg>
 );
 
-/** Visualization — Tableau-inspired bar chart */
-const VisualizationIcon = ({ size = 24, className = "" }: IconProps) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
-    <rect x="2"  y="14" width="4" height="7" rx="1" fill="#E8762D" />
-    <rect x="9"  y="9"  width="4" height="12" rx="1" fill="#1F3A6E" />
-    <rect x="16" y="4"  width="4" height="17" rx="1" fill="#E8762D" opacity=".7" />
-    <path d="M1 21h22" stroke="#1F3A6E" strokeWidth="1.5" strokeLinecap="round" />
-  </svg>
-);
-
-/** AI & Machine Learning — TensorFlow/neural-net nodes */
-const AiMlIcon = ({ size = 24, className = "" }: IconProps) => (
+/** Category icon — Machine Learning (neural-net nodes) */
+const MachineLearningIcon = ({ size = 24, className = "" }: IconProps) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
     <circle cx="12" cy="12" r="2.5" fill="#FF6F00" />
     <circle cx="4"  cy="7"  r="1.8" fill="#EE4C2C" />
@@ -59,117 +47,38 @@ const AiMlIcon = ({ size = 24, className = "" }: IconProps) => (
   </svg>
 );
 
-const ImgIcon = ({ src, alt }: { src: string; alt?: string }) => (
-  <Image
-    src={src}
-    alt={alt || "Tool Icon"}
-    fill
-    className="object-contain"
-  />
-);
-
-/** Microsoft Excel — official green X icon (inline, always shows) */
-const ExcelIcon = () => (
-  <svg viewBox="0 0 24 24" className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
-    <rect width="24" height="24" rx="3" fill="#217346"/>
-    <path d="M14 4h6v2h-6V4zm0 4h6v2h-6V8zm0 4h6v2h-6v-2zm0 4h6v2h-6v-2z" fill="#FFFFFF" opacity="0.4"/>
-    <path d="M4 4h8v16H4V4z" fill="#185C37"/>
-    <text x="8" y="16" textAnchor="middle" fontFamily="Arial,sans-serif" fontSize="10" fontWeight="bold" fill="#FFFFFF">X</text>
+/** Category icon — Databases & Infrastructure (cylinder) */
+const DatabaseIcon = ({ size = 24, className = "" }: IconProps) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" className={className}>
+    <ellipse cx="12" cy="5.5" rx="8" ry="3" stroke="#E70488" strokeWidth="1.7" />
+    <path d="M4 5.5v5c0 1.66 3.58 3 8 3s8-1.34 8-3v-5" stroke="#E70488" strokeWidth="1.7" strokeLinecap="round" />
+    <path d="M12 13.5v5M4 10.5v5c0 1.66 3.58 3 8 3 2.24 0 4.28-.31 5.87-.85" stroke="#130754" strokeWidth="1.7" strokeLinecap="round" />
   </svg>
 );
-
-/** Microsoft Power BI — official yellow icon (inline, always shows) */
-const PowerBIIcon = () => (
-  <svg viewBox="0 0 24 24" className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
-    <rect x="4" y="13" width="4" height="7" rx="1" fill="#F2C811"/>
-    <rect x="10" y="8"  width="4" height="12" rx="1" fill="#F2C811" opacity="0.75"/>
-    <rect x="16" y="3"  width="4" height="17" rx="1" fill="#F2C811" opacity="0.5"/>
-  </svg>
-);
-
-const nameIconMap: Record<string, React.ReactNode> = {
-  // Programming
-  "Python":            <div className="relative w-full h-full"><ImgIcon src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/python/python-original.svg" alt="Python" /></div>,
-  "R":                 <div className="relative w-full h-full"><ImgIcon src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/r/r-original.svg" alt="R" /></div>,
-  "SQL":               <div className="relative w-full h-full"><ImgIcon src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/microsoftsqlserver/microsoftsqlserver-original.svg" alt="SQL Server" /></div>,
-  "MySQL":             <div className="relative w-full h-full"><ImgIcon src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/mysql/mysql-original.svg" alt="MySQL" /></div>,
-  "PostgreSQL":        <div className="relative w-full h-full"><ImgIcon src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/postgresql/postgresql-original.svg" alt="PostgreSQL" /></div>,
-  "Git":               <div className="relative w-full h-full"><ImgIcon src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/git/git-original.svg" alt="Git" /></div>,
-  "Jupyter":           <div className="relative w-full h-full"><ImgIcon src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/jupyter/jupyter-original.svg" alt="Jupyter" /></div>,
-  "Jupyter Notebook":  <div className="relative w-full h-full"><ImgIcon src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/jupyter/jupyter-original.svg" alt="Jupyter" /></div>,
-
-  // Data Analysis
-  "Excel":             <ExcelIcon />,
-  "Microsoft Excel":   <ExcelIcon />,
-  "Pandas":            <div className="relative w-full h-full"><ImgIcon src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/pandas/pandas-original.svg" alt="Pandas" /></div>,
-  "NumPy":             <div className="relative w-full h-full"><ImgIcon src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/numpy/numpy-original.svg" alt="NumPy" /></div>,
-  "SPSS":              <div className="relative w-full h-full"><ImgIcon src="https://www.vectorlogo.zone/logos/ibm/ibm-icon.svg" alt="IBM SPSS" /></div>,
-
-  // Visualization
-  "Power BI":          <PowerBIIcon />,
-  "PowerBI":           <PowerBIIcon />,
-  "PowerBi":           <PowerBIIcon />,
-  "powerbi":           <PowerBIIcon />,
-  "power bi":          <PowerBIIcon />,
-  "Power Bi":          <PowerBIIcon />,
-  "Microsoft Power BI": <PowerBIIcon />,
-  "Tableau":           <div className="relative w-full h-full"><ImgIcon src="https://www.vectorlogo.zone/logos/tableau/tableau-icon.svg" alt="Tableau" /></div>,
-  "tableau":           <div className="relative w-full h-full"><ImgIcon src="https://www.vectorlogo.zone/logos/tableau/tableau-icon.svg" alt="Tableau" /></div>,
-  "Matplotlib":        <div className="relative w-full h-full"><ImgIcon src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/matplotlib/matplotlib-original.svg" alt="Matplotlib" /></div>,
-  "Looker":            <div className="relative w-full h-full"><ImgIcon src="https://www.vectorlogo.zone/logos/looker/looker-icon.svg" alt="Looker" /></div>,
-  "Looker Studio":     <div className="relative w-full h-full"><ImgIcon src="https://www.vectorlogo.zone/logos/looker/looker-icon.svg" alt="Looker Studio" /></div>,
-  "Power Automate":    <div className="relative w-full h-full"><ImgIcon src="https://www.vectorlogo.zone/logos/microsoft_flow/microsoft_flow-icon.svg" alt="Power Automate" /></div>,
-
-  // AI & Machine Learning
-  "Scikit-learn":      <div className="relative w-full h-full"><ImgIcon src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/scikitlearn/scikitlearn-original.svg" alt="Scikit-learn" /></div>,
-  "Scikit Learn":      <div className="relative w-full h-full"><ImgIcon src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/scikitlearn/scikitlearn-original.svg" alt="Scikit-learn" /></div>,
-  "TensorFlow":        <div className="relative w-full h-full"><ImgIcon src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/tensorflow/tensorflow-original.svg" alt="TensorFlow" /></div>,
-  "PyTorch":           <div className="relative w-full h-full"><ImgIcon src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/pytorch/pytorch-original.svg" alt="PyTorch" /></div>,
-  "Keras":             <div className="relative w-full h-full"><ImgIcon src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/keras/keras-original.svg" alt="Keras" /></div>,
-  "OpenCV":            <div className="relative w-full h-full"><ImgIcon src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/opencv/opencv-original.svg" alt="OpenCV" /></div>,
-  "AI / ML":           <AiMlIcon size={20} />,
-
-  // DevOps & Cloud
-  "Docker":            <div className="relative w-full h-full"><ImgIcon src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/docker/docker-original.svg" alt="Docker" /></div>,
-  "AWS":               <div className="relative w-full h-full"><ImgIcon src="https://www.vectorlogo.zone/logos/amazon_aws/amazon_aws-icon.svg" alt="AWS" /></div>,
-  "GCP":               <div className="relative w-full h-full"><ImgIcon src="https://www.vectorlogo.zone/logos/google_cloud/google_cloud-icon.svg" alt="Google Cloud" /></div>,
-  "Google Cloud":      <div className="relative w-full h-full"><ImgIcon src="https://www.vectorlogo.zone/logos/google_cloud/google_cloud-icon.svg" alt="Google Cloud" /></div>,
-  "Azure":             <div className="relative w-full h-full"><ImgIcon src="https://www.vectorlogo.zone/logos/microsoft_azure/microsoft_azure-icon.svg" alt="Azure" /></div>,
-  
-  // Data Engineering
-  "Airflow":           <div className="relative w-full h-full"><ImgIcon src="https://www.vectorlogo.zone/logos/apache_airflow/apache_airflow-icon.svg" alt="Apache Airflow" /></div>,
-  "Apache Airflow":    <div className="relative w-full h-full"><ImgIcon src="https://www.vectorlogo.zone/logos/apache_airflow/apache_airflow-icon.svg" alt="Apache Airflow" /></div>,
-  "Spark":             <div className="relative w-full h-full"><ImgIcon src="https://www.vectorlogo.zone/logos/apache_spark/apache_spark-icon.svg" alt="Apache Spark" /></div>,
-  "PySpark":           <div className="relative w-full h-full"><ImgIcon src="https://www.vectorlogo.zone/logos/apache_spark/apache_spark-icon.svg" alt="Apache Spark" /></div>,
-  "Hadoop":            <div className="relative w-full h-full"><ImgIcon src="https://www.vectorlogo.zone/logos/apache_hadoop/apache_hadoop-icon.svg" alt="Apache Hadoop" /></div>,
-  "Kafka":             <div className="relative w-full h-full"><ImgIcon src="https://www.vectorlogo.zone/logos/apache_kafka/apache_kafka-icon.svg" alt="Apache Kafka" /></div>,
-  "Snowflake":         <div className="relative w-full h-full"><ImgIcon src="https://www.vectorlogo.zone/logos/snowflake/snowflake-icon.svg" alt="Snowflake" /></div>,
-  "BigQuery":          <div className="relative w-full h-full"><ImgIcon src="https://www.vectorlogo.zone/logos/google_bigquery/google_bigquery-icon.svg" alt="Google BigQuery" /></div>,
-};
-
-/** Helper to find icon by name (case-insensitive) */
-const getSkillIcon = (name: string) => {
-  const normalized = name.toLowerCase().trim();
-  const entry = Object.entries(nameIconMap).find(([key]) => key.toLowerCase() === normalized);
-  return entry ? entry[1] : <FallbackIcon name={name} />;
-};
 
 const categoryIconMap: Record<string, React.ReactNode> = {
-  "Programming":           <ProgrammingIcon  size={22} />,
-  "Data Analysis":         <DataAnalysisIcon size={22} />,
-  "Visualization":         <VisualizationIcon size={22} />,
-  "AI & Machine Learning": <AiMlIcon         size={22} />,
+  "Software Engineering":       <SoftwareIcon       size={22} />,
+  "Data & Analytics":           <DataAnalyticsIcon  size={22} />,
+  "Machine Learning":           <MachineLearningIcon size={22} />,
+  "Databases & Infrastructure": <DatabaseIcon      size={22} />,
 };
 
-const CATEGORY_ORDER = ["Programming", "Data Analysis", "Visualization", "AI & Machine Learning"];
+const categoryColorMap: Record<string, string> = {
+  "Software Engineering":       "text-teal-400",
+  "Data & Analytics":           "text-amber-400",
+  "Machine Learning":           "text-blue-400",
+  "Databases & Infrastructure": "text-rose-400",
+};
+
+const CATEGORY_ORDER = ["Software Engineering", "Data & Analytics", "Machine Learning", "Databases & Infrastructure"];
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SKILL PROGRESS BAR
+// SKILL ROW (name + icon)
 // ─────────────────────────────────────────────────────────────────────────────
 
-interface SkillProgressProps { name: string; icon: React.ReactNode; }
+interface SkillRowProps { name: string; icon: React.ReactNode; }
 
-const SkillProgress: React.FC<SkillProgressProps> = ({ name, icon }) => {
+const SkillRow: React.FC<SkillRowProps> = ({ name, icon }) => {
   const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.2 });
   return (
     <motion.div
@@ -179,13 +88,10 @@ const SkillProgress: React.FC<SkillProgressProps> = ({ name, icon }) => {
       transition={{ duration: 0.3 }}
       className="last:mb-0 mb-4"
     >
-      <div className="flex items-center gap-2.5 mb-1.5">
-        <span className="w-4 h-4 flex items-center justify-center flex-shrink-0 relative">
-          {icon}
-        </span>
+      <div className="flex items-center gap-2.5">
+        {icon}
         <span className="text-xs font-semibold text-foreground">{name}</span>
       </div>
-      <div className="w-full bg-muted/70 h-1 rounded-full overflow-hidden border border-border/60 opacity-70" />
     </motion.div>
   );
 };
@@ -241,7 +147,12 @@ const SoftSkillCard: React.FC<{ skill: SoftSkill; index: number }> = ({ skill, i
 // ─────────────────────────────────────────────────────────────────────────────
 
 const Skills: React.FC<{ skills: Skill[] }> = ({ skills }) => {
-  // Group by category, preserve admin dropdown order
+  const resolveIcon = (name: string) => {
+    const icon = getSkillIcon(name);
+    if (icon) return <SkillLogo icon={icon} />;
+    return <FallbackIcon name={name} />;
+  };
+
   const grouped = skills.reduce((acc, s) => {
     (acc[s.category] ??= []).push(s);
     return acc;
@@ -260,14 +171,14 @@ const Skills: React.FC<{ skills: Skill[] }> = ({ skills }) => {
           <motion.p
             initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-primary text-[10px] font-bold tracking-[0.4em] uppercase mb-4"
+            className="text-muted-foreground text-[10px] font-bold tracking-[0.4em] uppercase mb-4"
           >
-            Technical Proficiency
+            Technical Skills
           </motion.p>
           <motion.h2
             initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }} transition={{ duration: 0.6 }}
-            className="text-4xl md:text-5xl font-bold text-foreground tracking-tight"
+            className="text-4xl md:text-5xl font-sans font-bold text-foreground tracking-tight"
           >
             Core Competencies
           </motion.h2>
@@ -285,7 +196,7 @@ const Skills: React.FC<{ skills: Skill[] }> = ({ skills }) => {
               const itemCount = grouped[category].length;
               let spanClass = "col-span-1";
               
-              if (category === "Programming" || itemCount > 6) {
+              if (category === "Software Engineering" || itemCount > 6) {
                 spanClass = "col-span-1 lg:col-span-2";
               }
 
@@ -299,24 +210,24 @@ const Skills: React.FC<{ skills: Skill[] }> = ({ skills }) => {
                   className={`bg-card/60 rounded-2xl p-7 border border-border/60 hover:border-border/80 transition-all duration-500 ${spanClass} flex flex-col h-full group`}
                 >
                   <div className="flex items-center gap-4 mb-10 pb-4 border-b border-border/60">
-                    <div className="w-9 h-9 rounded-xl bg-muted/80 text-primary flex-shrink-0 flex items-center justify-center border border-border/60 transition-all duration-300 group-hover:scale-105">
-                      {categoryIconMap[category] ?? <AiMlIcon size={20} />}
+                    <div className={`w-9 h-9 rounded-xl bg-muted/80 flex-shrink-0 flex items-center justify-center border border-border/60 transition-all duration-300 group-hover:scale-105 ${categoryColorMap[category] ?? "text-primary"}`}>
+                      {categoryIconMap[category] ?? <MachineLearningIcon size={20} />}
                     </div>
                     <div>
                       <h3 className="text-sm font-bold text-foreground tracking-tight leading-none">{category}</h3>
-                      <p className="text-[9px] text-muted-foreground font-semibold uppercase tracking-wider mt-1.5">Skills</p>
+                      <p className="text-[10px] text-muted-foreground font-semibold uppercase tracking-wider mt-1.5">Skills</p>
                     </div>
                     <span className="ml-auto text-xs font-bold text-muted-foreground tabular-nums">
-                      {grouped[category].length.toString().padStart(2, '0')}
-                    </span>
-                  </div>
+                        {grouped[category].length.toString().padStart(2, '0')}
+                      </span>
+                    </div>
 
                   <div className={spanClass.includes("col-span-2") ? "grid grid-cols-1 sm:grid-cols-2 gap-x-12" : "flex flex-col"}>
                     {grouped[category].map((skill) => (
-                      <SkillProgress
+                      <SkillRow
                         key={skill.id}
                         name={skill.name}
-                        icon={getSkillIcon(skill.name)}
+                        icon={resolveIcon(skill.name)}
                       />
                     ))}
                   </div>

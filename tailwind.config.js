@@ -18,7 +18,6 @@ module.exports = {
     extend: {
       fontFamily: {
         sans: ["var(--font-inter)", "var(--font-outfit)", "sans-serif"],
-        serif: ['"DM Serif Display"', "Georgia", "serif"],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -71,6 +70,8 @@ module.exports = {
         marquee: "marquee-scroll 30s linear infinite",
         float: "float-y 6s ease-in-out infinite",
         flicker: "flicker 1s step-end infinite",
+        "loader-pop": "loader-pop 0.5s cubic-bezier(0.22, 1, 0.36, 1) both",
+        "loader-dot": "loader-dot 1.1s ease-in-out infinite",
       },
       keyframes: {
         "gradient-x": {
@@ -88,6 +89,14 @@ module.exports = {
         flicker: {
           "0%, 100%": { opacity: "1" },
           "50%": { opacity: "0" },
+        },
+        "loader-pop": {
+          "0%": { opacity: "0", transform: "translateY(10px) scale(0.94)" },
+          "100%": { opacity: "1", transform: "translateY(0) scale(1)" },
+        },
+        "loader-dot": {
+          "0%, 100%": { opacity: "0.25", transform: "scale(0.85)" },
+          "50%": { opacity: "1", transform: "scale(1)" },
         },
       },
     },

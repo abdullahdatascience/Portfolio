@@ -8,9 +8,12 @@ export interface ProfileData {
   subtitle: string;
   aboutTitle: string;
   aboutBio: string;
-  projectsCount: number;
-  toolsCount: number;
-  experienceCount: number;
+  // All configured Typewriter Lines (admin → Profile → Typewriter Lines).
+  // The Hero rotates through them continuously; falls back to [subtitle].
+  typewriterLines?: string[];
+  // projectsCount/toolsCount/experienceCount were removed from the UI
+  // (fake-stat counters) — kept out of the type; Firestore may still hold
+  // legacy values that are ignored by the frontend.
 }
 
 export interface Skill {
@@ -29,6 +32,7 @@ export interface Project {
   themeColor: string;
   link?: string;
   image?: string;
+  featured?: boolean;
 }
 
 export interface Certification {
