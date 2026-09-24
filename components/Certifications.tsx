@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
@@ -6,36 +6,57 @@ import { ExternalLink, Award } from "lucide-react";
 import type { Certification } from "@/lib/types";
 
 // ─── Credly embed script loader (singleton) ─────────────────
+
 let credlyLoaded = false;
 
 const loadCredlyScript = (): Promise<void> =>
   new Promise((resolve) => {
     if (typeof window === "undefined") return resolve();
+
     if (credlyLoaded) {
       if (window.Credly?.embed) window.Credly.embed();
       return resolve();
     }
+
     const src = "https://cdn.credly.com/assets/utilities/embed.js";
+
     if (document.querySelector(`script[src="${src}"]`)) {
       credlyLoaded = true;
       return resolve();
     }
+
     const s = document.createElement("script");
     s.src = src;
     s.async = true;
-    s.onload = () => { credlyLoaded = true; resolve(); };
-    s.onerror = () => resolve(); 
+
+    s.onload = () => {
+      credlyLoaded = true;
+      resolve();
+    };
+
+    s.onerror = () => resolve();
+
     document.body.appendChild(s);
   });
 
-const CertCard: React.FC<{ cert: Certification; index: number }> = ({ cert, index }) => {
+const CertCard: React.FC<{ cert: Certification; index: number }> = ({
+  cert,
+  index,
+}) => {
   const [badgeReady, setBadgeReady] = useState(false);
+
   const hasCredly = Boolean(cert.badgeId);
 
+  // Use the downloaded badge specifically for the Certiport certification.
+  const isCertiport =
+    cert.issuer?.toLowerCase().includes("certiport") ||
+    cert.title?.toLowerCase().includes("it specialist");
+
   useEffect(() => {
-    if (!hasCredly) return;
+    if (!hasCredly || isCertiport) return;
+
     loadCredlyScript().then(() => setBadgeReady(true));
-  }, [hasCredly]);
+  }, [hasCredly, isCertiport]);
 
   useEffect(() => {
     if (badgeReady && window.Credly?.embed) {
@@ -44,6 +65,20 @@ const CertCard: React.FC<{ cert: Certification; index: number }> = ({ cert, inde
   }, [badgeReady]);
 
   const renderMedia = () => {
+    // ─── Certiport downloaded badge ─────────────────────────
+    if (isCertiport) {
+      return (
+        <div className="w-40 h-40 rounded-2xl bg-white/5 border border-border/60 flex items-center justify-center overflow-hidden">
+          <img
+            src="/logos/certiport-data-analytics.png"
+            alt="Certiport IT Specialist - Data Analytics badge"
+            className="w-36 h-36 object-contain"
+          />
+        </div>
+      );
+    }
+
+    // ─── Live Credly badge for other certifications ─────────
     if (hasCredly) {
       return (
         <div className="relative min-w-[150px] min-h-[200px] flex items-center justify-center">
@@ -54,6 +89,7 @@ const CertCard: React.FC<{ cert: Certification; index: number }> = ({ cert, inde
               <div className="w-16 h-2.5 bg-white/5 rounded" />
             </div>
           )}
+
           <div
             data-iframe-width="150"
             data-iframe-height="200"
@@ -64,7 +100,8 @@ const CertCard: React.FC<{ cert: Certification; index: number }> = ({ cert, inde
         </div>
       );
     }
-    
+
+    // ─── Fallback for certifications without a badge ────────
     return (
       <div className="w-28 h-28 rounded-2xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center">
         <Award size={48} className="text-teal-400" />
@@ -77,16 +114,21 @@ const CertCard: React.FC<{ cert: Certification; index: number }> = ({ cert, inde
       return {
         label: "Verify on Credly",
         url: `https://www.credly.com/badges/${cert.badgeId}`,
-        icon: <ExternalLink size={14} />
+        icon: <ExternalLink size={14} />,
       };
     }
-    if (cert.certificateUrl && /^https?:\/\//i.test(cert.certificateUrl)) {
+
+    if (
+      cert.certificateUrl &&
+      /^https?:\/\//i.test(cert.certificateUrl)
+    ) {
       return {
         label: "View Certificate",
         url: cert.certificateUrl,
-        icon: <ExternalLink size={14} />
+        icon: <ExternalLink size={14} />,
       };
     }
+
     return null;
   };
 
@@ -110,15 +152,17 @@ const CertCard: React.FC<{ cert: Certification; index: number }> = ({ cert, inde
           <span className="inline-block mb-2 text-xs font-bold text-teal-400 uppercase tracking-[0.2em]">
             {cert.issuer}
           </span>
+
           <h3 className="text-2xl font-sans font-bold tracking-tight text-foreground mb-3">
             {cert.title}
           </h3>
+
           {cert.issueDate && (
             <p className="text-sm text-muted-foreground mb-4 flex items-center justify-center md:justify-start gap-2">
-               <Award size={14} /> {cert.issueDate}
+              <Award size={14} /> {cert.issueDate}
             </p>
           )}
-          
+
           <div className="h-px w-full bg-gradient-to-r from-teal-500/30 via-white/10 to-transparent mb-6" />
 
           {buttonInfo && (
@@ -140,21 +184,25 @@ const CertCard: React.FC<{ cert: Certification; index: number }> = ({ cert, inde
 
 const Certifications: React.FC<{ certs: Certification[] }> = ({ certs }) => {
   return (
-    <section id="certifications" className="py-20 bg-background relative overflow-hidden">
+    <section
+      id="certifications"
+      className="py-20 bg-background relative overflow-hidden"
+    >
       <div className="absolute top-1/2 left-0 -translate-y-1/2 w-[500px] h-[500px] bg-indigo-500/5 rounded-full blur-[120px] -z-10 pointer-events-none" />
-      
+
       <div className="container mx-auto px-4 sm:px-6 md:pl-24 relative z-10">
         <motion.div
-           initial={{ opacity: 0, y: -20 }}
-           whileInView={{ opacity: 1, y: 0 }}
-           viewport={{ once: true }}
-           className="text-center mb-12"
+          initial={{ opacity: 0, y: -20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center mb-12"
         >
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-sans font-bold tracking-tight mb-4">
-             <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent1 to-accent2 animate-gradient-x">
-               Certifications
-             </span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent1 to-accent2 animate-gradient-x">
+              Certifications
+            </span>
           </h2>
+
           <div className="mx-auto h-1 w-24 rounded-full bg-gradient-to-r from-teal-400 to-blue-500" />
         </motion.div>
 
@@ -162,6 +210,7 @@ const Certifications: React.FC<{ certs: Certification[] }> = ({ certs }) => {
           {certs.map((cert, index) => (
             <CertCard key={cert.id} cert={cert} index={index} />
           ))}
+
           {certs.length === 0 && (
             <div className="text-center py-16 opacity-40">
               <p>No certifications recorded yet.</p>
@@ -177,6 +226,8 @@ export default Certifications;
 
 declare global {
   interface Window {
-    Credly?: { embed: () => void };
+    Credly?: {
+      embed: () => void;
+    };
   }
 }
