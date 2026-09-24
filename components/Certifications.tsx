@@ -150,8 +150,8 @@ const Certifications: React.FC<{ certs: Certification[] }> = ({ certs }) => {
            viewport={{ once: true }}
            className="text-center mb-12"
         >
-          <h2 className="text-3xl sm:text-5xl font-bold mb-4">
-             <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-blue-400">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-sans font-bold tracking-tight mb-4">
+             <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent1 to-accent2 animate-gradient-x">
                Certifications
              </span>
           </h2>

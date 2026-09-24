@@ -84,8 +84,8 @@ const Contact: React.FC = () => {
 
       <div className="container mx-auto px-4 sm:px-6 md:pl-24">
         <div className="text-center mb-16">
-          <h2 className="text-3xl sm:text-5xl font-sans font-bold tracking-tight mb-4">
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent1 to-accent2">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-sans font-bold tracking-tight mb-4">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent1 to-accent2 animate-gradient-x">
               Get In Touch
             </span>
           </h2>

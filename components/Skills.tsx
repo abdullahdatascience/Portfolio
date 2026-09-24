@@ -394,9 +394,11 @@ const Skills: React.FC<{ skills: Skill[] }> = ({ skills }) => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="text-4xl md:text-5xl font-sans font-bold text-foreground tracking-tight"
+            className="text-3xl sm:text-4xl md:text-5xl font-sans font-bold tracking-tight mb-4"
           >
-            Core Competencies
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-accent1 to-accent2 animate-gradient-x">
+              Core Competencies
+            </span>
           </motion.h2>
 
           <motion.div
