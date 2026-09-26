@@ -3,17 +3,7 @@
 import React from "react";
 import { useInView } from "react-intersection-observer";
 import { motion } from "framer-motion";
-import {
-  Brain,
-  MessageSquare,
-  Users,
-  Lightbulb,
-  Clock,
-  RefreshCw,
-  Target,
-  BookOpen,
-  TrendingUp,
-} from "lucide-react";
+import { Brain } from "lucide-react";
 import type { Skill } from "@/lib/types";
 import { getSkillIcon, SkillLogo } from "@/lib/skillIcons";
 
@@ -210,139 +200,6 @@ const SkillRow: React.FC<SkillRowProps> = ({ name, icon }) => {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// SOFT SKILLS
-// ─────────────────────────────────────────────────────────────────────────────
-
-interface SoftSkill {
-  label: string;
-  description: string;
-  icon: React.ReactNode;
-  color: string;
-  textColor: string;
-  borderColor: string;
-}
-
-const SOFT_SKILLS: SoftSkill[] = [
-  {
-    label: "Communication",
-    description:
-      "Translating complex data into clear, compelling narratives for any audience.",
-    icon: <MessageSquare size={16} />,
-    color: "bg-teal-500/5",
-    textColor: "text-teal-400",
-    borderColor: "hover:border-teal-500/30",
-  },
-  {
-    label: "Teamwork",
-    description:
-      "Collaborating across cross-functional teams to deliver shared objectives.",
-    icon: <Users size={16} />,
-    color: "bg-blue-500/5",
-    textColor: "text-blue-400",
-    borderColor: "hover:border-blue-500/30",
-  },
-  {
-    label: "Problem Solving",
-    description:
-      "Breaking down ambiguous challenges into structured, data-driven solutions.",
-    icon: <Lightbulb size={16} />,
-    color: "bg-yellow-500/5",
-    textColor: "text-yellow-400",
-    borderColor: "hover:border-yellow-500/30",
-  },
-  {
-    label: "Time Management",
-    description:
-      "Prioritising tasks effectively to meet tight deadlines without sacrificing quality.",
-    icon: <Clock size={16} />,
-    color: "bg-purple-500/5",
-    textColor: "text-purple-400",
-    borderColor: "hover:border-purple-500/30",
-  },
-  {
-    label: "Adaptability",
-    description:
-      "Thriving in fast-changing environments and quickly learning new tools and methods.",
-    icon: <RefreshCw size={16} />,
-    color: "bg-emerald-500/5",
-    textColor: "text-emerald-400",
-    borderColor: "hover:border-emerald-500/30",
-  },
-  {
-    label: "Critical Thinking",
-    description:
-      "Evaluating data objectively to draw well-reasoned, evidence-based conclusions.",
-    icon: <Brain size={16} />,
-    color: "bg-pink-500/5",
-    textColor: "text-pink-400",
-    borderColor: "hover:border-pink-500/30",
-  },
-  {
-    label: "Attention to Detail",
-    description:
-      "Ensuring accuracy and consistency across every dataset, report, and deliverable.",
-    icon: <Target size={16} />,
-    color: "bg-rose-500/5",
-    textColor: "text-rose-400",
-    borderColor: "hover:border-rose-500/30",
-  },
-  {
-    label: "Continuous Learning",
-    description:
-      "Staying ahead of the curve by actively exploring new analytical techniques.",
-    icon: <BookOpen size={16} />,
-    color: "bg-cyan-500/5",
-    textColor: "text-cyan-400",
-    borderColor: "hover:border-cyan-500/30",
-  },
-  {
-    label: "Results-Oriented",
-    description:
-      "Focusing on measurable impact and actionable insights that drive real business value.",
-    icon: <TrendingUp size={16} />,
-    color: "bg-orange-500/5",
-    textColor: "text-orange-400",
-    borderColor: "hover:border-orange-500/30",
-  },
-];
-
-const SoftSkillCard: React.FC<{
-  skill: SoftSkill;
-  index: number;
-}> = ({ skill, index }) => {
-  const { ref, inView } = useInView({
-    triggerOnce: true,
-    threshold: 0.1,
-  });
-
-  return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, y: 15 }}
-      animate={inView ? { opacity: 1, y: 0 } : {}}
-      transition={{ duration: 0.4, delay: index * 0.05 }}
-      className={`group flex flex-col gap-3 bg-card/70 rounded-xl p-5 border border-border/60 backdrop-blur-md ${skill.borderColor} hover:bg-muted/70 transition-all duration-300`}
-    >
-      <div className="flex items-center gap-3">
-        <div
-          className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${skill.color} ${skill.textColor}`}
-        >
-          {skill.icon}
-        </div>
-
-        <span className="text-sm font-semibold text-foreground">
-          {skill.label}
-        </span>
-      </div>
-
-      <p className="text-[11px] text-muted-foreground leading-normal">
-        {skill.description}
-      </p>
-    </motion.div>
-  );
-};
-
-// ─────────────────────────────────────────────────────────────────────────────
 // MAIN COMPONENT
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -500,31 +357,9 @@ const Skills: React.FC<{ skills: Skill[] }> = ({ skills }) => {
             </p>
           </div>
         )}
-
-        {/* Soft skills */}
-        <div className="max-w-6xl mx-auto mt-32">
-          <div className="flex items-center gap-6 mb-16">
-            <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.5em] whitespace-nowrap">
-              Intrapersonal Skills
-            </h3>
-
-            <div className="h-px w-full bg-border/60" />
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {SOFT_SKILLS.map((skill, index) => (
-              <SoftSkillCard
-                key={skill.label}
-                skill={skill}
-                index={index}
-              />
-            ))}
-          </div>
-        </div>
       </div>
     </section>
   );
 };
 
 export default Skills;
-
